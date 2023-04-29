@@ -18,6 +18,7 @@ build/
 .env.production.local
 
 # Other artifacts
+config.env
 yarn-error.log
 coverage/
 .nyc_output/
