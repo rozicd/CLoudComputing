@@ -14,6 +14,7 @@ const Register = (firstName, lastName, birthdate, username, email, password) => 
         })
         .catch(error => {
             console.log(error);
+            window.alert(error.message)
             // Handle the error
         });
 };
