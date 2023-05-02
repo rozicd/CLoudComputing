@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import loginImage from '../assets/images/loginPhoto.png';
+import Register from '../service/registerService'
+
 import {
-    Grid,
     TextField,
     Button,
     Card,
-    CardHeader,
     CardContent
 } from '@mui/material';
 
@@ -14,11 +13,12 @@ function RegisterPage() {
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [surname, setSurname] = useState('');
-    const [birthDate, setbirthDate] = useState(null);
+    const [birthDate, setbirthDate] = useState('');
     const [email, setEmail] = useState('');
 
     const handleSignUp = () => {
         // code to handle sign up
+        Register(name, surname, birthDate, username, email, password)
     };
 
     return (

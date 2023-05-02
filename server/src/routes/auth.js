@@ -31,6 +31,9 @@ const router = express.Router();
 
 // Register endpoint
 router.post('/register', async (req, res) => {
+  console.log(process.env.AWS_ACCESS_KEY_ID)
+  console.log(process.env.AWS_SECRET_ACCESS_KEY)
+
   const { firstName, lastName, birthdate, username, email, password } = req.body;
 
   // Check if the user already exists in the database
