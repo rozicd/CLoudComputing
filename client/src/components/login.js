@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import SignIn from '../service/authService'
 import loginImage from '../assets/images/loginPhoto.png'
+import { useNavigate } from "react-router-dom";
+
 
 import {
     Grid,
@@ -12,9 +14,14 @@ import SignInPage from './signin';
 import RegisterPage from './register';
 
 
+
+
+
 function LoginPage() {
 
+
     const [signUpPressed, setSignUpPressed] = useState(false);
+
 
     return (
         <Grid container className="login-page">

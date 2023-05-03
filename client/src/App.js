@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Auth } from "aws-amplify";
+import Login from './components/login';
+import Home from './components/home';
+import { useState, useEffect } from 'react';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        async function checkAuth() {
+            try {
+                const session = await Auth.currentSession();
+                setIsAuthenticated(session.isValid());
+            } catch (err) {
+                setIsAuthenticated(false);
+                console.log(err);
+            }
+        }
+
+        checkAuth();
+    }, []);
+
+    return (
+        <Routes>
+            <Route
+                path="/login"
+                element={
+                    isAuthenticated ? <Navigate to="/home" /> : <Login />
+                }
+            />
+            <Route
+                path="/home"
+                element={
+                    isAuthenticated ? <Home /> : <Navigate to="/login" />
+                }
+            />
+        </Routes>
+    );
 }
 
 export default App;
