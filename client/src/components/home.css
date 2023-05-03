@@ -19,6 +19,12 @@
     border: 2px dashed #ccc;
     border-radius: 4px;
   }
+  .center-cloud-upload{
+    display:flex;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
   .signout-button{
     position: absolute;
     right: 0;

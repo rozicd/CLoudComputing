@@ -99,8 +99,8 @@ function Home() {
                         <Typography>{selectedFile.name}</Typography>
                     </div>
                     ) : (
-                    <div>
-                        <CloudUploadIcon className="home-upload-icon" />
+                    <div className = "center-cloud-upload">
+                        <CloudUploadIcon sx={{ fontSize: 100 }} className="home-upload-icon" />
                         <Typography variant="h6">Drag and drop your file here</Typography>
                     </div>    )}     
                     </div>

@@ -36,10 +36,10 @@ function RegisterPage(props) {
                 <TextField label="Email" fullWidth margin="normal"  value={email} onChange={(e) => setEmail(e.target.value)} />
                 <TextField fullWidth margin="normal" type="date" value={birthDate} onChange={(e) => setbirthDate(e.target.value)} />
                 <div className="button-container">
-                    <Button className="register-button" variant="contained" color="secondary" onClick={handleSignUp}>
+                    <Button className="register-button" variant="contained" color="primary" onClick={handleSignUp}>
                         Sign Up
                     </Button>
-                    <Button className="register-button" variant="contained" color="primary" onClick={handleBack}>
+                    <Button className="register-button" variant="contained" color="secondary" onClick={handleBack}>
                         Back
                     </Button>
                 </div>
