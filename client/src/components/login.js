@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import SignIn from '../service/authService'
 import loginImage from '../assets/images/loginPhoto.png'
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 
 import {
@@ -23,11 +23,12 @@ function LoginPage() {
     const [signUpPressed, setSignUpPressed] = useState(false);
 
 
+
     return (
         <Grid container className="login-page">
             <Grid container className="login-page-left">
                {!signUpPressed &&<SignInPage setSignUpPressed={setSignUpPressed} ></SignInPage>}
-               {signUpPressed && <RegisterPage></RegisterPage>}
+               {signUpPressed && <RegisterPage setSignUpPressed={setSignUpPressed}></RegisterPage>}
             </Grid>
             <Grid container className="login-page-right">
                 <Card className="login-image-card">

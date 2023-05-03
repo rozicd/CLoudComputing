@@ -8,7 +8,7 @@ import {
     CardContent
 } from '@mui/material';
 
-function RegisterPage() {
+function RegisterPage(props) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
@@ -21,6 +21,10 @@ function RegisterPage() {
         Register(name, surname, birthDate, username, email, password)
     };
 
+
+    const handleBack = () =>{
+        props.setSignUpPressed(false)
+    }
     return (
         <Card className="register-form-card">
             <CardContent className="login-card-content">
@@ -34,6 +38,9 @@ function RegisterPage() {
                 <div className="button-container">
                     <Button className="register-button" variant="contained" color="secondary" onClick={handleSignUp}>
                         Sign Up
+                    </Button>
+                    <Button className="register-button" variant="contained" color="primary" onClick={handleBack}>
+                        Back
                     </Button>
                 </div>
             </CardContent>

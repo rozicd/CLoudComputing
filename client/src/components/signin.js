@@ -7,7 +7,7 @@ import {
     Card,
     CardContent,
 } from '@mui/material';
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from 'react-router-dom';
 
 function SignInPage({ signUpPressed, setSignUpPressed }) {
     const [username, setUsername] = useState('');

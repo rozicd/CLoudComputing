@@ -1,0 +1,71 @@
+.home-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .home-title {
+    margin: 16px;
+  }
+  
+  .home-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width:100%;
+    min-height: 300px;
+    padding: 16px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+  }
+  .signout-button{
+    position: absolute;
+    right: 0;
+  }
+  .home-dropzone:hover {
+    cursor: pointer;
+    background-color: #f9f9f9;
+  }
+  
+  .home-preview-image-container {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .home-preview-image {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+  }
+  
+  .home-has-file {
+    background-color: #f9f9f9;
+  }
+   
+  .home-file-input {
+    display: none;
+  }
+   
+  .home-content {
+    display:flex;
+    flex-direction: column;
+  }
+  
+  
+  .home-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+   
+  .home-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+   
+  .home-button {
+    margin: 0 8px;
+  }

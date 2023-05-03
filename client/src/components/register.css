@@ -64,6 +64,7 @@
     width: 45%;
 }
 
+
 @media (max-width: 1300px) {
     .login-page-right {
         display: none;
