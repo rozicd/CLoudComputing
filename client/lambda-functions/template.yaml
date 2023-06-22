@@ -1,0 +1,263 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  ContentTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: content
+      AttributeDefinitions:
+        - AttributeName: contentId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: contentId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  ContentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: my-content-bucket
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: MyUserPool
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: MyUserPoolClient
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: MyAPI
+        paths:
+          /content:
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST  # Add this line
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateContentFunction.Arn}/invocations
+              responses:
+                '200':
+                  description: '200 response'
+          
+          /content/{contentId}:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: GET  # Add this line
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetContentFunction.Arn}/invocations
+              responses:
+                '200':
+                  description: '200 response'
+
+            delete:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: DELETE  # Add this line
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteContentFunction.Arn}/invocations
+              responses:
+                '200':
+                  description: '200 response'
+
+          /albums:
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST  # Add this line
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateAlbumFunction.Arn}/invocations
+              responses:
+                '200':
+                  description: '200 response'
+
+          /albums/{albumId}:
+            delete:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: DELETE  # Add this line
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteAlbumFunction.Arn}/invocations
+              responses:
+                '200':
+                  description: '200 response'
+
+          /share/{contentId}:
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST  # Add this line
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ShareContentFunction.Arn}/invocations
+              responses:
+                '200':
+                  description: '200 response'
+
+          /share/{contentId}/{userId}:
+            delete:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: DELETE  # Add this line
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RemoveShareFunction.Arn}/invocations
+              responses:
+                '200':
+                  description: '200 response'
+      EndpointConfiguration: REGIONAL
+
+  CreateContentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CreateContent
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: ./create-content
+      Environment:
+        Variables:
+          ContentTable: !Ref ContentTable
+          ContentBucket: !Ref ContentBucket
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ContentTable
+        - S3CrudPolicy:
+            BucketName: !Ref ContentBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /content
+            Method: POST
+
+  GetContentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetContent
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: ./get-content
+      Environment:
+        Variables:
+          ContentTable: !Ref ContentTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ContentTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /content/{contentId}
+            Method: GET
+
+  DeleteContentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteContent
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: ./delete-content
+      Environment:
+        Variables:
+          ContentTable: !Ref ContentTable
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref ContentTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /content/{contentId}
+            Method: DELETE
+
+  CreateAlbumFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CreateAlbum
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: ./create-album
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ContentTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /albums
+            Method: POST
+
+  DeleteAlbumFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteAlbum
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: ./delete-album
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ContentTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /albums/{albumId}
+            Method: DELETE
+
+  ShareContentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ShareContent
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: ./share-content
+      Environment:
+        Variables:
+          ContentTable: !Ref ContentTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ContentTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /share/{contentId}
+            Method: POST
+
+  RemoveShareFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: RemoveShare
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: ./remove-share
+      Environment:
+        Variables:
+          ContentTable: !Ref ContentTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ContentTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /share/{contentId}/{userId}
+            Method: DELETE
+
+
+
+Outputs:
+  ApiGatewayEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod

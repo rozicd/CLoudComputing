@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { Auth, Storage } from 'aws-amplify';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -13,12 +12,12 @@ function Home() {
     const fileInputRef = useRef(null);
 
     const handleSignOut = async () => {
-        try {
-            await Auth.signOut();
-            window.location.reload();
-        } catch (error) {
-            console.log('Error signing out:', error);
-        }
+        // try {
+        //     await Auth.signOut();
+        //     window.location.reload();
+        // } catch (error) {
+        //     console.log('Error signing out:', error);
+        // }
     };
 
     const handleFileChange = (event) => {
@@ -38,15 +37,15 @@ function Home() {
             return;
         }
 
-        try {
-            const filename = selectedFile.name;
-            const result = await Storage.put(filename, selectedFile);
-            console.log('Uploaded file:', result.key);
-            alert('File uploaded successfully');
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            alert('Error uploading file');
-        }
+        // try {
+        //     const filename = selectedFile.name;
+        //     const result = await Storage.put(filename, selectedFile);
+        //     console.log('Uploaded file:', result.key);
+        //     alert('File uploaded successfully');
+        // } catch (error) {
+        //     console.error('Error uploading file:', error);
+        //     alert('Error uploading file');
+        // }
         setSelectedFile(null);
         setShowConfirmationDialog(false)
     };
