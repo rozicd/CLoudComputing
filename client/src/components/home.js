@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Auth, Storage } from 'aws-amplify';
+import { Auth } from 'aws-amplify';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import axios from 'axios';
+
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import './home.css';
@@ -34,22 +36,52 @@ function Home() {
 
     const handleFileUpload = async () => {
         if (!selectedFile) {
-            alert('Please select a file');
-            return;
+          alert('Please select a file');
+          return;
         }
-
+      
         try {
-            const filename = selectedFile.name;
-            const result = await Storage.put(filename, selectedFile);
-            console.log('Uploaded file:', result.key);
-            alert('File uploaded successfully');
+          const endpoint = 'https://s05es69cs1.execute-api.eu-central-1.amazonaws.com/dev/uploadfile';
+      
+          const reader = new FileReader();
+          reader.readAsDataURL(selectedFile);
+          reader.onloadend = async () => {
+            const fileContent = reader.result.split(',')[1];
+      
+            const fileData = {
+              file: {
+                content: fileContent,
+                filename: selectedFile.name,
+                size: selectedFile.size,
+                type: selectedFile.type,
+                lastModified: selectedFile.lastModified,
+                caption: '',
+                tags: ["No"]
+              },
+              foldername: '' // Set the folder name if required
+            };
+      
+            const response = await axios.post(endpoint, JSON.stringify(fileData), {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+      
+            if (response.status === 200) {
+              // File uploaded successfully
+              console.log('File uploaded');
+            } else {
+              // Handle error
+              console.error('Error uploading file');
+            }
+          };
         } catch (error) {
-            console.error('Error uploading file:', error);
-            alert('Error uploading file');
+          console.error('Error uploading file:', error);
         }
+      
         setSelectedFile(null);
-        setShowConfirmationDialog(false)
-    };
+        setShowConfirmationDialog(false);
+      };
 
     const handleCancelUpload = () => {
         setSelectedFile(null);

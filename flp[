@@ -1,0 +1,123 @@
+[33mcommit 8b8bcdeeb57724f364cd6e8646f12131e7da86cd[m[33m ([m[1;36mHEAD -> [m[1;32mserverless[m[33m, [m[1;31morigin/serverless[m[33m)[m
+Author: MarkoErdelji <erdeljimarko@gmail.com>
+Date:   Fri Jun 23 01:21:00 2023 +0200
+
+    feat: Removed amplify added SAM
+
+[33mcommit c8e86cce838eab0252c2d412c51f552bdbfa1aec[m
+Author: MarkoErdelji <erdeljimarko@gmail.com>
+Date:   Wed May 3 22:24:31 2023 +0200
+
+    fix: Fixed cloud upload icon
+
+[33mcommit 9e3e05efab77cba02f1275015dfd5dd9e16c6e51[m
+Author: MarkoErdelji <erdeljimarko@gmail.com>
+Date:   Wed May 3 21:50:32 2023 +0200
+
+    feat: Added home page that allows for uploading files to s3
+
+[33mcommit 948f05891c5554410e54b186a706ce42d8431cc1[m
+Author: unknown <ognjen34car@gmail.com>
+Date:   Wed May 3 19:46:20 2023 +0200
+
+    feature added file upload and deleted uneccesary files
+
+[33mcommit b9ba16587b1aafb3fac5b15bad152c19331c550e[m
+Author: MarkoErdelji <erdeljimarko@gmail.com>
+Date:   Tue May 2 21:21:31 2023 +0200
+
+    feat: Added amplify auth (beggining serverless)
+
+[33mcommit ec6688b9d9a7524756171f5a2372b0b1bf96287c[m[33m ([m[1;31morigin/development[m[33m, [m[1;32mdevelopment[m[33m)[m
+Merge: 8f1cca3 037dac9
+Author: Dušan Rožić <96205750+rozicd@users.noreply.github.com>
+Date:   Tue May 2 20:47:39 2023 +0200
+
+    Merge pull request #3 from rozicd/registration
+    
+    Registration
+
+[33mcommit 037dac9cdb5a72d5544d10e6b33858f39cb4cdd9[m[33m ([m[1;31morigin/registration[m[33m)[m
+Author: Dušan Rožić <96205750+rozicd@users.noreply.github.com>
+Date:   Tue May 2 20:44:08 2023 +0200
+
+    feat: Implemented registration
+
+[33mcommit b6e248988f24f3411eb54858ed38168b731a95ea[m
+Author: Dušan Rožić <96205750+rozicd@users.noreply.github.com>
+Date:   Tue May 2 20:41:56 2023 +0200
+
+    feat: Implemented registration
+
+[33mcommit 9a288f2dc9e2f508aabfc2af08fa8150949b2160[m
+Author: Dušan Rožić <96205750+rozicd@users.noreply.github.com>
+Date:   Tue May 2 18:47:19 2023 +0200
+
+    fix:Datepicker is no longer causing an issue
+
+[33mcommit afa55b08bcf817d099e66c7dcb604a4851539fdf[m
+Author: Dušan Rožić <96205750+rozicd@users.noreply.github.com>
+Date:   Tue May 2 18:21:23 2023 +0200
+
+    feat: Added Registration form but DatePicker is causing an issue
+
+[33mcommit 8f1cca3bd219f485dfc8233a7c6b2af21cb37eb0[m
+Author: unknown <ognjen34car@gmail.com>
+Date:   Sat Apr 29 20:25:59 2023 +0200
+
+    changed gitignore
+
+[33mcommit 3ec8a0cc7a8e75cefb24e18714a32f7aea441c33[m
+Merge: a581e43 45dbf7f
+Author: unknown <ognjen34car@gmail.com>
+Date:   Sat Apr 29 20:23:32 2023 +0200
+
+    Merge branch 'development' of https://github.com/rozicd/CLoudComputing into development
+
+[33mcommit a581e43313485b67c22fb6477ba0b487302de9da[m
+Author: unknown <ognjen34car@gmail.com>
+Date:   Sat Apr 29 20:23:06 2023 +0200
+
+    deleted confing
+
+[33mcommit 45dbf7f87be372b93072ca9935e1148fc698ad7f[m
+Merge: 7bbe3b5 5e98c87
+Author: Ognjen Radovanovic <86533460+ognjen34@users.noreply.github.com>
+Date:   Sat Apr 29 20:21:36 2023 +0200
+
+    Merge pull request #2 from rozicd/feature-client-login
+    
+    feature: created login page for client side
+
+[33mcommit 5e98c87adaaa472a624758d57bb33e6df4c68d8f[m[33m ([m[1;31morigin/feature-client-login[m[33m)[m
+Author: unknown <ognjen34car@gmail.com>
+Date:   Sat Apr 29 20:20:48 2023 +0200
+
+    feature: created login page for client side
+
+[33mcommit 7bbe3b55708d71ff645560db55833caa42f4a328[m
+Merge: 91f6817 5a44642
+Author: Marko Erdelji <96205939+MarkoErdelji@users.noreply.github.com>
+Date:   Fri Apr 28 20:04:15 2023 +0200
+
+    Merge pull request #1 from rozicd/aws-s3-dynamodb
+    
+    feat: Added register and login with jwt (users saved to dynamoDB) and…
+
+[33mcommit 5a446422b948381f02904f28e3a2f195c1c24cae[m[33m ([m[1;31morigin/aws-s3-dynamodb[m[33m)[m
+Author: MarkoErdelji <erdeljimarko@gmail.com>
+Date:   Fri Apr 28 19:59:30 2023 +0200
+
+    feat: Added register and login with jwt (users saved to dynamoDB) and file upload to S3
+
+[33mcommit 91f68176d906a2ad0ce6342227982b561d752a8f[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: MarkoErdelji <erdeljimarko@gmail.com>
+Date:   Wed Apr 26 16:44:11 2023 +0200
+
+    feat: Initialized node project
+
+[33mcommit 7816eef9fb9841ec87fc232245683fa10d4f6496[m
+Author: Dušan Rožić <96205750+rozicd@users.noreply.github.com>
+Date:   Wed Apr 26 15:31:54 2023 +0200
+
+    Initial commit

@@ -13,6 +13,7 @@ async function Register(firstName, lastName, birthdate, username, email, passwor
         given_name:firstName,
         birthdate:birthdate
           },
+      autoVerify: true,
       autoSignIn: { // optional - enables auto sign in after user is confirmed
         enabled: true,
       }
