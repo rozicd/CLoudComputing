@@ -13,6 +13,8 @@ provider:
       Ref: ContentBucket
     TABLE_NAME:
       Ref: ContentTable
+    ALBUM_TABLE_NAME:
+      Ref: AlbumTable
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -25,6 +27,17 @@ provider:
         - dynamodb:DeleteItem
       Resource:
         - "Fn::GetAtt": [ContentTable, Arn]
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "Fn::GetAtt": [AlbumTable, Arn]
     - Effect: Allow
       Action:
         - "s3:GetObject"
@@ -64,6 +77,25 @@ functions:
       - http:
           # Path for this endpoint
           path: uploadfile
+          # HTTP method for this endpoint
+          method: post
+          # Enable CORS. Don't forget to return the right header in your response
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  createAlbum:
+    handler: create-album/create_album.create_album
+    package:
+      # Include 'createDogs' directory and all child directories
+      include: 'create-album/**'
+    # Specifies events that trigger the Lambda function
+    events:
+      # REST API endpoint of API Gateway
+      - http:
+          # Path for this endpoint
+          path: createAlbum
           # HTTP method for this endpoint
           method: post
           # Enable CORS. Don't forget to return the right header in your response

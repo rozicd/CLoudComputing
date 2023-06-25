@@ -110,18 +110,48 @@ function Home() {
           console.error('Error uploading file');
         }
       };
-    } catch (error) {
-      console.error('Error uploading file:', error);
+        } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+  
+      setSelectedFile(null);
+      setShowConfirmationDialog(false);
+    };
+    const handleAddAlbum = async () =>{
+        const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/createAlbum'
+        const album = {
+            album :{
+                albumname : "nekialbum2",
+                sharedusers: []
+            }
+        }
+        const session = await Auth.currentSession();
+        const token = session.getIdToken().getJwtToken();
+        try{
+            const response = await axios.post(endpoint, JSON.stringify(album), {
+                headers: {
+                  "Authorization": token,
+                  'Content-Type': 'application/json',
+                },
+              });
+        
+              if (response.status === 200) {
+                console.log('Album created');
+              } else {
+                
+                console.error('Error creating album');
+              }
+        }
+        catch(error){
+            console.error(error)
+        }
+        
+    
     }
-
-    setSelectedFile(null);
-    setShowConfirmationDialog(false);
-  };
-
-  const handleCancelUpload = () => {
-    setSelectedFile(null);
-    setShowConfirmationDialog(false);
-  };
+    const handleCancelUpload = () => {
+        setSelectedFile(null);
+        setShowConfirmationDialog(false);
+    };
 
   const handleDragOver = (event) => {
     event.preventDefault();
@@ -186,6 +216,7 @@ function Home() {
             </DialogActions>
           </Dialog>
         </Grid>
+        
         <Grid container spacing={2}>
             {content.map((item, index) => {
               const filenameParts = item.metadata.contentId.split('-file-');
@@ -218,7 +249,8 @@ function Home() {
                 </Grid>
               );
             })}
-        </Grid>
+        </Grid>            
+        <Button onClick={handleAddAlbum}>add album </Button>
       </Grid>
     </div>
   );
