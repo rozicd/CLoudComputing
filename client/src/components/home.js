@@ -1,11 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef ,useEffect} from 'react';
 import { Auth } from 'aws-amplify';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import './home.css';
 
@@ -13,6 +12,36 @@ function Home() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
     const fileInputRef = useRef(null);
+
+        const  loadData = async () => {
+        const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getusercontent';
+        console.log('Component loaded');
+
+        const session = await Auth.currentSession();
+            const token = session.getIdToken().getJwtToken();
+        
+            console.log(token)
+      
+
+      // Add the token to the request headers
+      
+            const response = await axios.get(endpoint, {
+              headers: {
+                "Authorization": token,
+                'Content-Type': 'application/json',
+            
+              },
+            });
+            console.log(response)
+            
+    };
+
+    useEffect(() => {
+        loadData(); 
+
+        return () => {
+        };
+    }, []); 
 
     const handleSignOut = async () => {
         try {
@@ -41,7 +70,7 @@ function Home() {
         }
       
         try {
-          const endpoint = 'https://s05es69cs1.execute-api.eu-central-1.amazonaws.com/dev/uploadfile';
+          const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/uploadfile';
       
           const reader = new FileReader();
           reader.readAsDataURL(selectedFile);
@@ -60,9 +89,16 @@ function Home() {
               },
               foldername: '' // Set the folder name if required
             };
+            const session = await Auth.currentSession();
+            const token = session.getIdToken().getJwtToken();
+            console.log(token)
+      
+
+      // Add the token to the request headers
       
             const response = await axios.post(endpoint, JSON.stringify(fileData), {
               headers: {
+                "Authorization": token,
                 'Content-Type': 'application/json',
               },
             });
@@ -132,7 +168,7 @@ function Home() {
                     </div>
                     ) : (
                     <div className = "center-cloud-upload">
-                        <CloudUploadIcon sx={{ fontSize: 100 }} className="home-upload-icon" />
+                        
                         <Typography variant="h6">Drag and drop your file here</Typography>
                     </div>    )}     
                     </div>

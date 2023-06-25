@@ -3,6 +3,9 @@ import boto3
 import base64
 import os
 from utility.utils import create_response
+from datetime import datetime
+
+
 
 table_name = os.environ['TABLE_NAME']
 bucket_name = os.environ['BUCKET_NAME']
@@ -10,7 +13,10 @@ s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
 
 def create(event, context):
-    # Extract the file content and metadata from the request
+    username = event['requestContext']['authorizer']['claims']['cognito:username']
+    print(username)
+    print(event['headers'])
+    timestamp = str(datetime.timestamp(datetime.now()))
     request_body = json.loads(event['body'])
     print(request_body['file'])
     print(request_body['file']['content'])
@@ -32,7 +38,7 @@ def create(event, context):
     # Upload the file to S3
     s3_client.put_object(
         Bucket=bucket_name,
-        Key=file_name,
+        Key=username+"-file-"+file_name + "-time-" +timestamp,
         Body=file_content_base64
     )
     
@@ -42,7 +48,7 @@ def create(event, context):
     # Insert file name into table
     response = table.put_item(
         Item={
-            'contentId': file_name,
+            'contentId': username+"-file-"+file_name +"-time-" + timestamp,
             'type': file_type,
             'size': file_size,
             'lastModified': file_last_modified,
