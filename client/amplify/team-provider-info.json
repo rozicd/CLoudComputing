@@ -14,10 +14,10 @@
     "categories": {
       "auth": {
         "client06fc6115": {
+          "nativeClientId": "6mdvh9anb9v9354jak8mpu7p7p",
           "userPoolId": "eu-central-1_IvEUKvEb1",
           "userPoolName": "users",
-          "webClientId": "6mdvh9anb9v9354jak8mpu7p7p",
-          "nativeClientId": "6mdvh9anb9v9354jak8mpu7p7p"
+          "webClientId": "6mdvh9anb9v9354jak8mpu7p7p"
         }
       }
     }
