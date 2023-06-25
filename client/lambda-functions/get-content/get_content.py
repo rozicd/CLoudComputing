@@ -18,7 +18,7 @@ def get_all(event, context):
     response = table.scan(
     FilterExpression='begins_with(#file, :prefix)',
     ExpressionAttributeNames={'#file': 'contentId'},
-    ExpressionAttributeValues={':prefix': username + '-file'}
+    ExpressionAttributeValues={':prefix': username}
 )
 
 

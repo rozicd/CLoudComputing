@@ -122,6 +122,25 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: Authorizer
+  editContent:
+    handler: edit-content/edit_content.update
+    package:
+      # Include 'createDogs' directory and all child directories
+      include: 'edit-content/**'
+    events:
+      # REST API endpoint of API Gateway
+      - http:
+          # Path for this endpoint
+          path: updateusercontent
+          # HTTP method for this endpoint
+          method: put
+          # Enable CORS. Don't forget to return the right header in your response
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+
 
 
 

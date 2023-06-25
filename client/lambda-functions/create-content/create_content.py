@@ -20,8 +20,7 @@ def create(event, context):
     request_body = json.loads(event['body'])
     print(request_body['file'])
     print(request_body['file']['content'])
-    file_content = request_body['file']['content'].encode('utf-8')
-    file_content_base64 = base64.b64decode(file_content)
+    file_content = base64.b64decode(request_body['file']['content']  + "="*((4 - len(request_body['file']['content']) % 4) % 4))
     folder_name = request_body['file'].get('foldername', "")
     file_name = request_body['file']['filename']
     file_size = request_body['file']['size']
@@ -38,8 +37,8 @@ def create(event, context):
     # Upload the file to S3
     s3_client.put_object(
         Bucket=bucket_name,
-        Key=username+"-file-"+file_name + "-time-" +timestamp,
-        Body=file_content_base64
+        Key=username+"-time-" +timestamp+"-file-"+file_name,
+        Body=file_content
     )
     
     # Table name
@@ -48,7 +47,7 @@ def create(event, context):
     # Insert file name into table
     response = table.put_item(
         Item={
-            'contentId': username+"-file-"+file_name +"-time-" + timestamp,
+            'contentId': username+"-time-" + timestamp+"-file-"+file_name,
             'type': file_type,
             'size': file_size,
             'lastModified': file_last_modified,
