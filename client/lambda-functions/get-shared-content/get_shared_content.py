@@ -1,3 +1,4 @@
+import base64
 import json
 import boto3
 import os
@@ -35,7 +36,8 @@ def get_shared(event, context):
             name = item['contentId']  
             response = s3_client.get_object(Bucket=bucket_name, Key=name)
             images = response['Body'].read() 
-            shared_items.append({'metadata': item, 'content': images})
+            encoded_data = base64.b64encode(images).decode('utf-8')            
+            shared_items.append({'metadata': item, 'content': encoded_data})
             
 
     for album in albums:

@@ -75,7 +75,7 @@ function DialogComponent({ albumName, item,user }) {
   };
 
   const handleDownload = () => {
-    // Decode the Base64 content
+    console.log(item.content)
     const decodedContent = atob(item.content);
 
     // Convert the decoded content to a Uint8Array
