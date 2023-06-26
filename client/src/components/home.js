@@ -36,9 +36,28 @@ function Home() {
     }
   };
 
+  const loadAlbums = async () =>{
+    const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getuseralbums'
+    try {
+      const session = await Auth.currentSession();
+      const token = session.getIdToken().getJwtToken();
+
+      const response = await axios.get(endpoint, {
+        headers: {
+          "Authorization": token,
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log("penis")
+      console.log(response.data);
+    } catch (error) {
+      console.log('Error retrieving content:', error);
+    }
+  }
+
   useEffect(() => {
     loadData();
-
+    loadAlbums();
     return () => { };
   }, []);
 
@@ -121,7 +140,7 @@ function Home() {
         const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/createAlbum'
         const album = {
             album :{
-                albumname : "nekialbum2",
+                albumname : "nekialbum3",
                 sharedusers: []
             }
         }
@@ -137,7 +156,11 @@ function Home() {
         
               if (response.status === 200) {
                 console.log('Album created');
-              } else {
+              } 
+              else if (response.status === 400){
+                window.alert(response.message)
+              }
+              else {
                 
                 console.error('Error creating album');
               }
@@ -251,6 +274,7 @@ function Home() {
             })}
         </Grid>            
         <Button onClick={handleAddAlbum}>add album </Button>
+        
       </Grid>
     </div>
   );
