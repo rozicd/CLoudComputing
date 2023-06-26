@@ -16,7 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import './home.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { blue, orange, purple, red } from '@mui/material/colors';
+import { blue, orange, purple, red, green} from '@mui/material/colors';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -30,6 +30,8 @@ function Home() {
   const fileInputRef = useRef(null);
   const [content, setContent] = useState([]);
   const [albums, setAlbums] = useState([]);
+  const [sharedContent, setSharedContent] = useState([]);
+  const [sharedAlbums, setSharedAlbums] = useState([]);
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -42,11 +44,13 @@ function Home() {
   const navigate = useNavigate();
   const loadData = async () => {
     const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getusercontent';
+    const endpoint_shared = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getsharedcontent';
     console.log('Component loaded');
+    const session = await Auth.currentSession();
+    const token = session.getIdToken().getJwtToken();
 
     try {
-      const session = await Auth.currentSession();
-      const token = session.getIdToken().getJwtToken();
+      
 
       const response = await axios.get(endpoint, {
         headers: {
@@ -62,6 +66,24 @@ function Home() {
     } catch (error) {
       console.log('Error retrieving content:', error);
     }
+    try {
+      
+
+      const response = await axios.get(endpoint_shared, {
+        headers: {
+          "Authorization": token,
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(response.data);
+      setSharedContent(response.data.response.files)
+      setSharedAlbums(response.data.response.albums)
+    } catch (error) {
+      console.log('Error retrieving content:', error);
+    }
+
+
+
   };
 
   const loadAlbums = async () => {
@@ -258,7 +280,36 @@ function Home() {
     console.log(usernames)
   }
 
-  const handleDeleteAlbum = (fileName) => {
+  const handleDeleteAlbum = async (fileName) => {
+    try {
+      const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/deletealbum/'+fileName;
+      console.log(endpoint)
+        const session = await Auth.currentSession();
+        const token = session.getIdToken().getJwtToken();
+
+        const response = await axios.delete(endpoint, {
+          headers: {
+            "Authorization": token,
+            'Content-Type': 'application/json',
+          },
+          params: {
+            album: fileName, 
+          }
+        });
+
+
+        if (response.status === 200) {
+          window.location.reload();
+
+              console.log('File deleted');
+              } else {
+              window.location.reload();
+              console.error('Error deleting file');
+              }
+        } catch (error) {
+        console.error('Error deleting file:', error);
+      } 
+
     console.log('delete '+fileName)
   }
 
@@ -323,8 +374,8 @@ function Home() {
                           
                           <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
      
-                            <Button sx={{ width: '30px', height: '30px', alignSelf: 'auto', marginBottom:"10px" }} onClick={handleDeleteAlbum(filename)} startIcon={<EditIcon sx={{ width: '25px', height: '30px', color: purple[800] }} />} />
-                            <Button sx={{ width: '30px', height: '30px', marginBottom:"10px", alignSelf: 'auto' }} onClick={handleEditAlbum(filename)} startIcon={<DeleteForeverIcon sx={{ width: '25px', height: '30px', color: red[800] }} />} />
+                            <Button sx={{ width: '30px', height: '30px', alignSelf: 'auto', marginBottom:"10px" }} onClick={()=>handleEditAlbum(filename)}><EditIcon sx={{ width: '25px', height: '30px', color: purple[800] }}/></Button>
+                            <Button sx={{ width: '30px', height: '30px', marginBottom:"10px", alignSelf: 'auto' }} onClick={()=>handleDeleteAlbum(filename)}><DeleteForeverIcon sx={{ width: '25px', height: '30px', color: red[800] }} /></Button>
                             
                           </Box>
                         )}
@@ -335,7 +386,7 @@ function Home() {
                 );
               })}
           </Grid>
-          <hr style={{ marginTop: '20px',width: '100%' }} /> {/* Horizontal line */}
+
           <Typography sx={{width:'100%',marginTop:'10px',marginLeft:'20px',color:blue[500],fontSize:'32px'}}>{albumNamePath}</Typography>
           <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
           <Dialog open={showConfirmationDialog} onClose={handleCancelUpload}>
@@ -349,7 +400,11 @@ function Home() {
               <Button onClick={handleFileUpload}>Upload</Button>
             </DialogActions>
           </Dialog>
+
+
+          
         </Grid>
+        
         
         <Grid container spacing={2} sx={{marginTop:'20px'}}>
             {content.map((item, index) => {
@@ -364,6 +419,27 @@ function Home() {
               );
             })}
         </Grid>
+
+        <hr style={{ marginTop: '20px',width: '100%' }} /> {/* Horizontal line */}
+        <Typography sx={{width:'100%',marginTop:'10px',marginLeft:'20px',color:green[500],fontSize:'32px'}}>Shared</Typography>
+
+        <Grid container spacing={2} sx={{marginTop:'20px'}}>
+            
+          </Grid>
+          <Grid container spacing={2} sx={{marginTop:'20px'}}>
+            {sharedContent.map((item, index) => {
+              const filenameParts = item.metadata.contentId.split('-file-');
+            
+               
+
+              return (
+                  <Grid item key={index}   >
+                    <DialogComponent item={item} albumName={albumNamePath}  />
+                  </Grid>
+              );
+            })}
+        </Grid>
+        
 
 
         <Dialog open={showAlbumCreationDialog} onClose={handleCancelAlbumCreation}>

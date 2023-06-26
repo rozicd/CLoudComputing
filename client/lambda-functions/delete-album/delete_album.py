@@ -17,7 +17,7 @@ def delete(event, context):
   folder_name =  event['pathParameters']['id']
   username = event['requestContext']['authorizer']['claims']['cognito:username']
   
-  folder_id = username + "-album-"+folder_name
+  folder_id = username+"-album-"+folder_name
   folder = None
   try:
     folder = album_table.get_item(
@@ -25,25 +25,32 @@ def delete(event, context):
                 'contentId': folder_id,
             }
         )
+    print("#######")
+    print(folder)
     folder_items = folder.get('Item', {}).get('images', [])
-    
+    print(folder_items)
+
     album_table.delete_item(
             Key={
                 'contentId': folder_id,
             }
         )
-    
-    for item in folder_items:
-      table.delete_item(
-            Key={
-                'contentId': item,
-            }
-        )
+
+    if len(folder_items) != 0:
+      for item in folder_items:
+        print(item)
+        table.delete_item(
+              Key={
+                  'contentId': item,
+              }
+          )
       
-      s3_client.delete_object(
-            Bucket=bucket_name,
-            Key=item
-        )
+        s3_client.delete_object(
+              Bucket=bucket_name,
+              Key=item
+          )
   except Exception as e:
       return create_response(500, {"message": str(e)})
+    
+  return create_response(200, {"message": "Album deleted successfully"})
 

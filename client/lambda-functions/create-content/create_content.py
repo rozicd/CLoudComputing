@@ -29,6 +29,9 @@ def create(event, context):
     caption = request_body['file']['caption']
     tags = request_body['file']['tags']
     print(tags)
+    shared = []
+    shared.append("goran")
+    shared.append("dejan")
     album_table = dynamodb.Table("albums")
     folder = None
     try:
@@ -61,7 +64,8 @@ def create(event, context):
             'size': file_size,
             'lastModified': file_last_modified,
             'caption': caption,
-            'tags': tags
+            'tags': tags,
+            'shared': shared
         }
     )
     folder_items.append(username+"-time-" + timestamp+"-file-"+file_name)
