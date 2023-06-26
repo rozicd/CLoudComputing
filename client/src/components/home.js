@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Auth } from 'aws-amplify';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import { Card, CardContent, Box, Typography } from '@mui/material';
+import { Card, CardContent, Box, Typography, Chip } from '@mui/material';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -24,6 +24,10 @@ function Home() {
   const [albumName, setAlbumName] = useState('default');
   const [username, setUsername] = useState('');
   const [usernames, setUsernames] = useState([]);
+
+  const [caption, setCaption] = useState('');
+  const [tagInput, setTagInput] = useState('');
+  const [tags, setTags] = useState([]);
 
   const fileInputRef = useRef(null);
   const [content, setContent] = useState([]);
@@ -62,6 +66,7 @@ function Home() {
     }
   };
 
+  
   const loadAlbums = async () => {
     const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getuseralbums';
     try {
@@ -111,14 +116,32 @@ function Home() {
       setShowConfirmationDialog(false);
       return;
     }
-    console.log(file)
+
     setSelectedFile(file);
     setShowConfirmationDialog(true);
   };
 
+  const handleCaptionChange = (event) => {
+    const newCaption = event.target.value;
+    if (newCaption.length <= 30) {
+      setCaption(newCaption);
+    }
+  };
+  
   const handleFileUpload = async () => {
+
     if (!selectedFile) {
       alert('Please select a file');
+      return;
+    }
+
+    const fileName = selectedFile.name.trim();
+    if (fileName.length > 30) {
+      alert('File name should be less than or equal to 30 characters.');
+      return;
+    }
+    if (fileName.includes(' ')) {
+      alert('File name should not contain whitespace.');
       return;
     }
 
@@ -137,8 +160,8 @@ function Home() {
             size: selectedFile.size,
             type: selectedFile.type,
             lastModified: selectedFile.lastModified,
-            caption: '',
-            tags: ["No"]
+            caption: caption,
+            tags: tags
           },
           foldername: albumNamePath
         };
@@ -167,7 +190,8 @@ function Home() {
         } catch (error) {
         console.error('Error uploading file:', error);
       }
-  
+      setTags([])
+      setCaption('')
       setSelectedFile(null);
       setShowConfirmationDialog(false);
     };
@@ -216,6 +240,8 @@ function Home() {
   };
 
     const handleCancelUpload = () => {
+      setTags([])
+      setCaption('')
         setSelectedFile(null);
         setShowConfirmationDialog(false);
     };
@@ -228,6 +254,19 @@ function Home() {
     event.preventDefault();
     event.stopPropagation();
     event.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleTagAdd = () => {
+    if (tagInput.trim() !== '') {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput('');
+    }
+  };
+  
+  const handleTagDelete = (index) => {
+    const newTags = [...tags];
+    newTags.splice(index, 1);
+    setTags(newTags);
   };
 
   const handleDrop = (event) => {
@@ -323,10 +362,42 @@ function Home() {
             <DialogContent>
               <Typography variant="h6">Are you sure you want to upload the following file?</Typography>
               <Typography>{selectedFile && selectedFile.name}</Typography>
+              <TextField autoFocus margin="dense" label="Caption" fullWidth value={caption}       onChange={handleCaptionChange} />
+              <Box display="flex" alignItems="center" mt={2}>
+                <TextField
+                  label="Tags"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyUp={(e) => {
+                    if (e.key === 'Enter') {
+                      handleTagAdd();
+                    }
+                  }}
+                />
+                <Button variant="contained" onClick={handleTagAdd} style={{ marginLeft: '8px' }}>
+                  Add
+                </Button>
+              </Box>
+              {tags.length > 0 && (
+                <Box display="flex" flexWrap="wrap" mt={2}>
+                  {tags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={tag}
+                      onDelete={() => handleTagDelete(index)}
+                      style={{ marginRight: '8px', marginTop: '4px' }}
+                    />
+                  ))}
+                </Box>
+              )}
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCancelUpload}>Cancel</Button>
-              <Button onClick={handleFileUpload}>Upload</Button>
+              <Button onClick={handleCancelUpload} color="error" variant="contained" startIcon={<CancelIcon />}>
+                Cancel
+              </Button>
+              <Button onClick={handleFileUpload} color="primary" variant="contained" startIcon={<CloudUploadIcon/>}>
+                Upload
+              </Button>
             </DialogActions>
           </Dialog>
         </Grid>
