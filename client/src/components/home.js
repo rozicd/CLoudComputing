@@ -6,6 +6,7 @@ import { Card, CardContent, Box, Typography } from '@mui/material';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import FolderIcon from '@mui/icons-material/Folder';
+import CreateNewFolder from '@mui/icons-material/CreateNewFolder'
 import DialogComponent from "./itemdetails"
 
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
@@ -287,7 +288,7 @@ function Home() {
         </Grid>
 
 
-        <Button onClick={handleAddAlbum}>Add album </Button>
+        <Button onClick={handleAddAlbum}><CreateNewFolder></CreateNewFolder> </Button>
         <Dialog open={showAlbumCreationDialog} onClose={handleCancelAlbumCreation}>
     <DialogTitle>Album creation</DialogTitle>
     <DialogContent>
