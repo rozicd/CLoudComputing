@@ -6,9 +6,11 @@ import { Card, CardContent, Box, Typography } from '@mui/material';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import FolderIcon from '@mui/icons-material/Folder';
+import DialogComponent from "./itemdetails"
 
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import './home.css';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -17,6 +19,7 @@ function Home() {
   const [content, setContent] = useState([]);
   const [albums, setAlbums] = useState([]);
 
+  const navigate = useNavigate();
   const loadData = async () => {
     const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getusercontent';
     console.log('Component loaded');
@@ -179,6 +182,7 @@ function Home() {
         setShowConfirmationDialog(false);
     };
 
+
   const handleDragOver = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -251,28 +255,9 @@ function Home() {
               var decodedContent = Buffer.from(base64Content,'base64').toString('utf-8')
 
               return (
-                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                  <Card>
-                    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <CardContent>
-                        <Typography variant="h6">{item.metadata.caption}</Typography>
-                        {item.metadata.type.startsWith('image') ? (
-                          <img
-                            src={decodedContent}
-                            alt={item.metadata.caption}
-                            style={{ objectFit: 'cover', maxHeight: '200px' }}
-                          />
-                        ) : (
-                            <div className="default-icon">
-                              {/* Add your default icon or placeholder here */}
-                            </div>
-                          )}
-                        <Typography>{filename}</Typography>
-                        <Typography>{item.metadata.tags.join(', ')}</Typography>
-                      </CardContent>
-                    </Box>
-                  </Card>
-                </Grid>
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                    <DialogComponent item={item} />
+                  </Grid>
               );
             })}
         </Grid>
