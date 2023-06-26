@@ -15,7 +15,15 @@ def create_album(event, context):
   request_body = json.loads(event['body'])
   
   album_name = request_body['album']['albumname']
-  all_albums = table.scan()
+  all_albums = table.scan(
+    FilterExpression='begins_with(#file, :prefix)',
+    ExpressionAttributeNames={'#file': 'contentId'},
+    ExpressionAttributeValues={':prefix': username}
+  )
+  print(all_albums)
+  for album in all_albums['Items']:
+    if album_name in album['contentId']:
+      return create_response(400, {"message", "Album name already exists!"})
 
   shared_users = request_body['album']['sharedusers']
   album = {

@@ -135,6 +135,25 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: Authorizer
+  getAlbums:
+    handler: get-albums/get_albums.get_all
+    package:
+      # Include 'createDogs' directory and all child directories
+      include: 'get-albums/**'
+    events:
+      # REST API endpoint of API Gateway
+      - http:
+          # Path for this endpoint
+          path: getuseralbums
+          # HTTP method for this endpoint
+          method: get
+          # Enable CORS. Don't forget to return the right header in your response
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+
   editContent:
     handler: edit-content/edit_content.update
     package:

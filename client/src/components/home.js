@@ -5,17 +5,27 @@ import Toolbar from '@mui/material/Toolbar';
 import { Card, CardContent, Box, Typography } from '@mui/material';
 import axios from 'axios';
 import { Buffer } from 'buffer';
+import FolderIcon from '@mui/icons-material/Folder';
+import CreateNewFolder from '@mui/icons-material/CreateNewFolder'
 import DialogComponent from "./itemdetails"
 
-import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import './home.css';
 import { Link, useNavigate } from 'react-router-dom';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [showAlbumCreationDialog, setShowAlbumCreationDialog] = useState(false);
+
+  const [albumName, setAlbumName] = useState('');
+  const [username, setUsername] = useState('');
+  const [usernames, setUsernames] = useState([]);
+
   const fileInputRef = useRef(null);
   const [content, setContent] = useState([]);
+  const [albums, setAlbums] = useState([]);
+
   const navigate = useNavigate();
   const loadData = async () => {
     const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getusercontent';
@@ -38,9 +48,29 @@ function Home() {
     }
   };
 
+  const loadAlbums = async () =>{
+    const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getuseralbums'
+    try {
+      const session = await Auth.currentSession();
+      const token = session.getIdToken().getJwtToken();
+
+      const response = await axios.get(endpoint, {
+        headers: {
+          "Authorization": token,
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log("albumi")
+      console.log(response.data.Items);
+      setAlbums(response.data.Items)
+    } catch (error) {
+      console.log('Error retrieving content:', error);
+    }
+  }
+
   useEffect(() => {
     loadData();
-
+    loadAlbums();
     return () => { };
   }, []);
 
@@ -120,12 +150,17 @@ function Home() {
       setSelectedFile(null);
       setShowConfirmationDialog(false);
     };
-    const handleAddAlbum = async () =>{
-        const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/createAlbum'
+    const handleAddAlbum = () =>{
+        setShowAlbumCreationDialog(true);
+        
+    }
+
+    const handleAlbumCreation = async() => {
+      const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/createAlbum'
         const album = {
             album :{
-                albumname : "nekialbum2",
-                sharedusers: []
+                albumname : albumName,
+                sharedusers: usernames
             }
         }
         const session = await Auth.currentSession();
@@ -140,7 +175,16 @@ function Home() {
         
               if (response.status === 200) {
                 console.log('Album created');
-              } else {
+                loadAlbums();
+                setShowAlbumCreationDialog(false)
+                setAlbumName('');
+                setUsername('');
+                setUsernames([])
+              } 
+              else if (response.status === 400){
+                window.alert(response.message)
+              }
+              else {
                 
                 console.error('Error creating album');
               }
@@ -148,14 +192,16 @@ function Home() {
         catch(error){
             console.error(error)
         }
-        
-    
-    }
+  };
+
     const handleCancelUpload = () => {
         setSelectedFile(null);
         setShowConfirmationDialog(false);
     };
 
+    const handleCancelAlbumCreation = () => {
+      setShowAlbumCreationDialog(false);
+  };
 
   const handleDragOver = (event) => {
     event.preventDefault();
@@ -174,6 +220,12 @@ function Home() {
       fileInputRef.current.click();
     }
   };
+  const handleAddUsername = () => {
+    usernames.push(username)
+    setUsernames(usernames)
+    setUsername('');
+    console.log(usernames)
+  }
 
   return (
     <div className="home-container">
@@ -233,8 +285,68 @@ function Home() {
                   </Grid>
               );
             })}
-        </Grid>            
-        <Button onClick={handleAddAlbum}>add album </Button>
+        </Grid>
+
+
+        <Button onClick={handleAddAlbum}><CreateNewFolder></CreateNewFolder> </Button>
+        <Dialog open={showAlbumCreationDialog} onClose={handleCancelAlbumCreation}>
+    <DialogTitle>Album creation</DialogTitle>
+    <DialogContent>
+      <TextField
+        label="Album Name"
+        fullWidth
+        margin="normal"
+        variant="outlined"
+        value={albumName}
+        onChange={(e) => setAlbumName(e.target.value)}
+        // Add the necessary props and onChange handler as needed
+      />
+
+      <TextField
+        label="Usernames"
+        fullWidth
+        margin="normal"
+        variant="outlined"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        // Add the necessary props and onChange handler as needed
+      />
+
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleAddUsername}
+        // Add onClick handler for the add button next to the usernames input field
+      >
+        Add
+      </Button>
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={handleCancelAlbumCreation}>Cancel</Button>
+      <Button onClick={handleAlbumCreation}>Upload</Button>
+    </DialogActions>
+    </Dialog>
+        <Grid container spacing={2}>
+            {albums.map((item, index) => {
+              const filenameParts = item.contentId.split('-album-');
+              const filename = filenameParts[1];
+
+              return (
+                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                  <Card>
+                    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <CardContent>
+                      <FolderIcon className='MuiSvgIcon-fontSizeLarge'></FolderIcon>
+                        
+                        <Typography>{filename}</Typography>
+                      </CardContent>
+                    </Box>
+                  </Card>
+                </Grid>
+              );
+            })}
+        </Grid>
+        
       </Grid>
     </div>
   );
