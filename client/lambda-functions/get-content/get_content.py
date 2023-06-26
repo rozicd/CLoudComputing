@@ -9,7 +9,12 @@ bucket_name = os.environ['BUCKET_NAME']
 def get_all(event, context):
     # Assuming you have the JWT token in the 'Authorization' header
     username = event['requestContext']['authorizer']['claims']['cognito:username']
-    folder_name = '-album-'+event['queryStringParameters'].get('album')
+    folder_name_base = event['queryStringParameters'].get('album')
+    folder_name = ""
+    if folder_name_base.startswith("Shared-"):
+        folder_name = folder_name_base.split("Shared-")[1]
+    else :
+        folder_name = username + '-album-'+event['queryStringParameters'].get('album')
 
     # Configure the DynamoDB client
     dynamodb = boto3.resource('dynamodb')
@@ -21,12 +26,20 @@ def get_all(event, context):
     try:
         folder = album_table.get_item(
             Key={
-                'contentId': username + folder_name,
+                'contentId':  folder_name,
             }
         )
+
+
+
     
     except Exception as e:
         return create_response(500, {"message": str(e)})
+    
+    if folder_name_base.startswith("Shared-"):
+        shared_usernames = folder.get('sharedUsers', [])
+        if username not in shared_usernames:
+            create_response(401, {"message","Jos jednom to da si probao"})
     folder_items = folder.get('Item', {}).get('images', [])
     filesFromFolder = []
     for item in folder_items:

@@ -10,13 +10,11 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CreateNewFolder from '@mui/icons-material/CreateNewFolder'
 import DialogComponent from "./itemdetails"
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EditIcon from '@mui/icons-material/Edit';
 
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import './home.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { blue, orange, purple, red, green} from '@mui/material/colors';
+import { blue, green, orange } from '@mui/material/colors';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -333,43 +331,6 @@ function Home() {
       setContent(sharedContent);
   }
 
-  const handleDeleteAlbum = async (fileName) => {
-    try {
-      const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/deletealbum/'+fileName;
-      console.log(endpoint)
-        const session = await Auth.currentSession();
-        const token = session.getIdToken().getJwtToken();
-
-        const response = await axios.delete(endpoint, {
-          headers: {
-            "Authorization": token,
-            'Content-Type': 'application/json',
-          },
-          params: {
-            album: fileName, 
-          }
-        });
-
-
-        if (response.status === 200) {
-          window.location.reload();
-
-              console.log('File deleted');
-              } else {
-              window.location.reload();
-              console.error('Error deleting file');
-              }
-        } catch (error) {
-        console.error('Error deleting file:', error);
-      } 
-
-    console.log('delete '+fileName)
-  }
-
-  const handleEditAlbum = (fileName) => {
-    console.log('edit'+fileName)
-  } 
-
   return (
     <div className="home-container">
       <AppBar position="static" className="home-app-bar">
@@ -413,29 +374,19 @@ function Home() {
               {albums.map((item, index) => {
                 const filenameParts = item.contentId.split('-album-');
                 const filename = filenameParts[1];
-                const showDeleteButton = filename !== 'default'
 
                 return (
-                  <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }}>
+                  <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange(filename)}>
                     <Card className='ItemCard'>
                       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <CardContent onClick={() => handleAlbumChange(filename)}>
-                          <FolderIcon sx={{ alignSelf: 'center', height: '80px', width: '100%', color: orange[300] }} />
-                          <Typography sx={{ width: '100%', marginTop: '10px', alignSelf: 'center', textAlign: 'center' }}>{filename}</Typography>
-                        </CardContent>
-                        {showDeleteButton && (
+                        <CardContent>
+                        <FolderIcon sx={{alignSelf:'center',height:'80px',width:'100%',color:orange[300]}}></FolderIcon>
                           
-                          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
-     
-                            <Button sx={{ width: '30px', height: '30px', alignSelf: 'auto', marginBottom:"10px" }} onClick={()=>handleEditAlbum(filename)}><EditIcon sx={{ width: '25px', height: '30px', color: purple[800] }}/></Button>
-                            <Button sx={{ width: '30px', height: '30px', marginBottom:"10px", alignSelf: 'auto' }} onClick={()=>handleDeleteAlbum(filename)}><DeleteForeverIcon sx={{ width: '25px', height: '30px', color: red[800] }} /></Button>
-                            
-                          </Box>
-                        )}
+                          <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>{filename}</Typography>
+                        </CardContent>
                       </Box>
                     </Card>
                   </Grid>
-
                 );
               })}
               <Grid item  sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange("All")}>
@@ -454,7 +405,7 @@ function Home() {
                 const filename = filenameParts[1]+"("+filenameParts[0] + ")";
 
                 return (
-                  <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange(filename)}>
+                  <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange("Shared-"+item)}>
                     <Card className='ItemCard'>
                       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                         <CardContent>

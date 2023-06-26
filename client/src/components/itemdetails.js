@@ -288,7 +288,7 @@ function DialogComponent({ albumName, item,user }) {
               Download
             </Button>
           )}
-          {!editing ? (
+          {!editing ?  user == username &&(
             <Button variant="contained" color="secondary" startIcon={<EditIcon />} onClick={handleEdit}>
               Edit
             </Button>
