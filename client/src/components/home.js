@@ -5,6 +5,7 @@ import Toolbar from '@mui/material/Toolbar';
 import { Card, CardContent, Box, Typography } from '@mui/material';
 import axios from 'axios';
 import { Buffer } from 'buffer';
+import FolderIcon from '@mui/icons-material/Folder';
 
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import './home.css';
@@ -14,6 +15,7 @@ function Home() {
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const fileInputRef = useRef(null);
   const [content, setContent] = useState([]);
+  const [albums, setAlbums] = useState([]);
 
   const loadData = async () => {
     const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getusercontent';
@@ -48,8 +50,9 @@ function Home() {
           'Content-Type': 'application/json',
         },
       });
-      console.log("penis")
-      console.log(response.data);
+      console.log("albumi")
+      console.log(response.data.Items);
+      setAlbums(response.data.Items)
     } catch (error) {
       console.log('Error retrieving content:', error);
     }
@@ -140,7 +143,7 @@ function Home() {
         const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/createAlbum'
         const album = {
             album :{
-                albumname : "nekialbum3",
+                albumname : "",
                 sharedusers: []
             }
         }
@@ -272,8 +275,30 @@ function Home() {
                 </Grid>
               );
             })}
-        </Grid>            
+        </Grid>
+
+
         <Button onClick={handleAddAlbum}>add album </Button>
+        <Grid container spacing={2}>
+            {albums.map((item, index) => {
+              const filenameParts = item.contentId.split('-album-');
+              const filename = filenameParts[1];
+
+              return (
+                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                  <Card>
+                    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <CardContent>
+                      <FolderIcon className='MuiSvgIcon-fontSizeLarge'></FolderIcon>
+                        
+                        <Typography>{filename}</Typography>
+                      </CardContent>
+                    </Box>
+                  </Card>
+                </Grid>
+              );
+            })}
+        </Grid>
         
       </Grid>
     </div>
