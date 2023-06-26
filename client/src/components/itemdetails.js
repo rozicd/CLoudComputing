@@ -12,6 +12,7 @@ import {
   DialogActions
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import './itemdetails.css';
 
 function DialogComponent({ item }) {
   const [open, setOpen] = useState(false);
@@ -23,22 +24,21 @@ function DialogComponent({ item }) {
   const handleClose = () => {
     setOpen(false);
   };
+  
 
   return (
     <>
-      <Card>
+      <Card className='ItemCard'>
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           <CardContent>
             <Typography variant="h6">{item.metadata.caption}</Typography>
             {item.metadata.type.startsWith('image') ? (
               <img
-                src={item.content}
                 alt={item.metadata.caption}
                 style={{ objectFit: 'cover', maxHeight: '200px' }}
               />
             ) : (
               <div className="default-icon">
-                {/* Add your default icon or placeholder here */}
               </div>
             )}
             <Typography>{item.metadata.filename}</Typography>
