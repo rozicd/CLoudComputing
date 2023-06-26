@@ -1,3 +1,4 @@
+import base64
 import json
 import boto3
 import os
@@ -60,7 +61,9 @@ def get_all(event, context):
         name = data['contentId']  
         response = s3_client.get_object(Bucket=bucket_name, Key=name)
         images = response['Body'].read() 
-        responseData.append({'metadata': data, 'content': images})
+        encoded_data = base64.b64encode(images).decode('utf-8')
+
+        responseData.append({'metadata': data, 'content': encoded_data})
       
     
     data = {'response': responseData}

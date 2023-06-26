@@ -30,8 +30,6 @@ def create(event, context):
     tags = request_body['file']['tags']
     print(tags)
     shared = []
-    shared.append("goran")
-    shared.append("dejan")
     album_table = dynamodb.Table("albums")
     folder = None
     try:
