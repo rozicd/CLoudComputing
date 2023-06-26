@@ -23,4 +23,6 @@ async function Register(firstName, lastName, birthdate, username, email, passwor
     console.log('error signing up:', error);
   }
 }
+
+
 export default Register;

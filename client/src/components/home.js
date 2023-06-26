@@ -18,7 +18,7 @@ function Home() {
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [showAlbumCreationDialog, setShowAlbumCreationDialog] = useState(false);
 
-  const [albumName, setAlbumName] = useState('');
+  const [albumName, setAlbumName] = useState('default');
   const [username, setUsername] = useState('');
   const [usernames, setUsernames] = useState([]);
 
@@ -63,6 +63,10 @@ function Home() {
       console.log("albumi")
       console.log(response.data.Items);
       setAlbums(response.data.Items)
+      if (response.data.Items.length === 0)
+      {
+        handleAlbumCreation();
+      }
     } catch (error) {
       console.log('Error retrieving content:', error);
     }
@@ -119,7 +123,7 @@ function Home() {
             caption: '',
             tags: ["No"]
           },
-          foldername: '' // Set the folder name if required
+          foldername: "-album-default"
         };
         const session = await Auth.currentSession();
         const token = session.getIdToken().getJwtToken();
