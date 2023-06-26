@@ -6,6 +6,8 @@ import { Card, CardContent, Box, Typography } from '@mui/material';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import FolderIcon from '@mui/icons-material/Folder';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CreateNewFolder from '@mui/icons-material/CreateNewFolder'
 import DialogComponent from "./itemdetails"
 
@@ -244,7 +246,7 @@ function Home() {
         </Toolbar>
       </AppBar>
       <Grid direction="column" className="home-content">
-        <Grid item xs={12} md={6} className="home-upload">
+          <Grid item xs={12} md={6} className="home-upload">
           <div
             className={`home-dropzone ${selectedFile ? 'home-has-file' : ''}`}
             onDragOver={handleDragOver}
@@ -262,7 +264,35 @@ function Home() {
                 <Typography variant="h6">Drag and drop your file here</Typography>
               </div>)
             }
-          </div>
+          </div>   
+          <Button onClick={handleAddAlbum} sx={{width:'10%', marginTop: '20px', alignSelf: 'center',justifySelf:'center',textAlign:'center'}}
+          variant="contained"
+          color="primary"
+          startIcon={<CreateNewFolder />}>
+            Add album           </Button>
+
+          <Grid container spacing={2} sx={{marginTop:'20px'}}>
+            
+              {albums.map((item, index) => {
+                const filenameParts = item.contentId.split('-album-');
+                const filename = filenameParts[1];
+
+                return (
+                  <Grid item key={index}>
+                    <Card className='ItemCard'>
+                      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <CardContent>
+                        <FolderIcon className='MuiSvgIcon-fontSizeLarge' sx={{alignSelf:'center',height:'80px',width:'100%'}}></FolderIcon>
+                          
+                          <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>{filename}</Typography>
+                        </CardContent>
+                      </Box>
+                    </Card>
+                  </Grid>
+                );
+              })}
+          </Grid>
+          <hr style={{ marginTop: '20px',width: '100%' }} /> {/* Horizontal line */}
           <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
           <Dialog open={showConfirmationDialog} onClose={handleCancelUpload}>
             <DialogTitle>Confirm Upload</DialogTitle>
@@ -277,7 +307,7 @@ function Home() {
           </Dialog>
         </Grid>
         
-        <Grid container spacing={2}>
+        <Grid container spacing={2} sx={{marginTop:'20px'}}>
             {content.map((item, index) => {
               const filenameParts = item.metadata.contentId.split('-file-');
             
@@ -292,7 +322,6 @@ function Home() {
         </Grid>
 
 
-        <Button onClick={handleAddAlbum}><CreateNewFolder></CreateNewFolder> </Button>
         <Dialog open={showAlbumCreationDialog} onClose={handleCancelAlbumCreation}>
     <DialogTitle>Album creation</DialogTitle>
     <DialogContent>
@@ -326,30 +355,18 @@ function Home() {
       </Button>
     </DialogContent>
     <DialogActions>
-      <Button onClick={handleCancelAlbumCreation}>Cancel</Button>
-      <Button onClick={handleAlbumCreation}>Upload</Button>
+      <Button onClick={handleCancelAlbumCreation}
+      variant="contained"
+      startIcon= {<CancelIcon/>}
+      color="error"
+      >Cancel</Button>
+      <Button onClick={handleAlbumCreation}
+      variant="contained"
+      color="primary"
+        startIcon={<CloudUploadIcon />}
+      >Upload</Button>
     </DialogActions>
     </Dialog>
-        <Grid container spacing={2}>
-            {albums.map((item, index) => {
-              const filenameParts = item.contentId.split('-album-');
-              const filename = filenameParts[1];
-
-              return (
-                <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                  <Card>
-                    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <CardContent>
-                      <FolderIcon className='MuiSvgIcon-fontSizeLarge'></FolderIcon>
-                        
-                        <Typography>{filename}</Typography>
-                      </CardContent>
-                    </Box>
-                  </Card>
-                </Grid>
-              );
-            })}
-        </Grid>
         
       </Grid>
     </div>

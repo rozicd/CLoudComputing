@@ -13,11 +13,16 @@ import {
   DialogContent,
   DialogActions
 } from '@mui/material';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ImageIcon from '@mui/icons-material/Image';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import EditIcon from '@mui/icons-material/Edit';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
 import './itemdetails.css';
+import { blue, orange, purple } from '@mui/material/colors';
 
 function DialogComponent({ item }) {
   const [open, setOpen] = useState(false);
@@ -34,9 +39,11 @@ function DialogComponent({ item }) {
   const handleDownload = () => {
     setOpen(false);
   };
+
   const handleEdit = () => {
     setOpen(false);
   };
+
   const handleDelete = async () => {
     try {
         const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/deletefile/'+item.metadata.contentId;
@@ -66,21 +73,25 @@ function DialogComponent({ item }) {
         }  };
   return (
     <>
-        <Card className='ItemCard'>
+        <Card className='ItemCard' sx={{ '&:hover': { cursor: 'pointer' } ,marginBottom:'10px'}} onClick={handleClickOpen}>
             <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent>
-                <Typography variant="h6">{item.metadata.caption}</Typography>
-                {item.metadata.type.startsWith('image') ? (
-                <img
-                    alt={item.metadata.caption}
-                    style={{ objectFit: 'cover', maxHeight: '200px' }}
-                />
+            <Typography variant="h6">{item.metadata.caption}</Typography>
+            {item.metadata.type.startsWith('image') ? (
+              <ImageIcon sx={{width:'100%',height:'40%',alignSelf:'center',color:blue[800]}} />
+
+            ) : (
+              <div className="default-icon">
+                {item.metadata.type.startsWith('audio') ? (
+                  <MusicNoteIcon sx={{width:'100%',height:'100px',alignSelf:'center',color:purple[800]}}/>
+                ) : item.metadata.type.startsWith('video') ? (
+                  <VideoLibraryIcon sx={{width:'100%',height:'100px',alignSelf:'center',color:orange[800]}} />
                 ) : (
-                <div className="default-icon">
-                </div>
+                  <InsertDriveFileIcon sx={{width:'100%',height:'100px',alignSelf:'center',color:blue[800]}} />
                 )}
-                <Typography>Name: {item.metadata.filename}</Typography>
-                <Button onClick={handleClickOpen}>View Details</Button>
+              </div>
+            )}
+            <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>{item.metadata.name}</Typography>
             </CardContent>
             </Box>
         </Card>
