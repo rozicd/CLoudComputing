@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Auth } from 'aws-amplify';
 import Login from './components/login';
 import Home from './components/home';
+import ItemDetails from './components/home';
+
 import { useState, useEffect } from 'react';
 
 function App() {
