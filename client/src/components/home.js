@@ -13,7 +13,7 @@ import DialogComponent from "./itemdetails"
 
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import './home.css';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -27,6 +27,14 @@ function Home() {
   const fileInputRef = useRef(null);
   const [content, setContent] = useState([]);
   const [albums, setAlbums] = useState([]);
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const albumQueryParam = queryParams.get('album');
+  const defaultAlbumName = 'default';
+  
+  const [albumNamePath, setAlbumNamePath] = useState(albumQueryParam || defaultAlbumName);
+
 
   const navigate = useNavigate();
   const loadData = async () => {
@@ -74,7 +82,7 @@ function Home() {
     loadData();
     loadAlbums();
     return () => { };
-  }, []);
+  }, [albumNamePath]);
 
   const handleSignOut = async () => {
     try {
@@ -121,7 +129,7 @@ function Home() {
             caption: '',
             tags: ["No"]
           },
-          foldername: '' // Set the folder name if required
+          foldername: '-album-'+albumNamePath
         };
         const session = await Auth.currentSession();
         const token = session.getIdToken().getJwtToken();
@@ -222,6 +230,14 @@ function Home() {
       fileInputRef.current.click();
     }
   };
+
+  const handleAlbumChange = (albumName) => {
+    setAlbumNamePath(albumName);
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set('album', albumName);
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.replaceState({}, '', newUrl);  };
+
   const handleAddUsername = () => {
     usernames.push(username)
     setUsernames(usernames)
@@ -274,11 +290,11 @@ function Home() {
                 const filename = filenameParts[1];
 
                 return (
-                  <Grid item key={index}>
+                  <Grid item key={index} onClick={ ()=>handleAlbumChange(filename)}>
                     <Card className='ItemCard'>
                       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                         <CardContent>
-                        <FolderIcon className='MuiSvgIcon-fontSizeLarge' sx={{alignSelf:'center',height:'80px',width:'100%'}}></FolderIcon>
+                        <FolderIcon sx={{alignSelf:'center',height:'80px',width:'100%'}}></FolderIcon>
                           
                           <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>{filename}</Typography>
                         </CardContent>
