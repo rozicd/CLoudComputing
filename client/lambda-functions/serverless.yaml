@@ -143,6 +143,20 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: Authorizer
+  getSharedContent:
+    handler: get-shared-content/get_shared_content.get_shared
+    package:
+      include: 'get-shared-content/**'
+    events:
+      - http:
+          path: getsharedcontent
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+              
   getAlbums:
     handler: get-albums/get_albums.get_all
     package:
