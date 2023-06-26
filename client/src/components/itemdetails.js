@@ -24,7 +24,9 @@ import { Link, useLocation } from 'react-router-dom';
 import './itemdetails.css';
 import { blue, green, orange, purple, red } from '@mui/material/colors';
 
-function DialogComponent({albumName, item }) {
+function DialogComponent({albumName, item ,user}) {
+  
+
   const [open, setOpen] = useState(false);
 
   

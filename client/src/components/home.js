@@ -60,7 +60,13 @@ function Home() {
         },
       });
       console.log(response.data);
+      if (albumNamePath == "All")
+      {
+        setContent(sharedContent);
+      }
+      else {
       setContent(response.data.response);
+      }
     } catch (error) {
       console.log('Error retrieving content:', error);
     }
@@ -277,6 +283,14 @@ function Home() {
     setUsername('');
     console.log(usernames)
   }
+  const handleAllClick = (albumName) =>
+  {
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set('album', "Shared");
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.replaceState({}, '', newUrl); 
+      setContent(sharedContent);
+  }
 
   return (
     <div className="home-container">
@@ -336,6 +350,35 @@ function Home() {
                   </Grid>
                 );
               })}
+              <Grid item  sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange("All")}>
+                    <Card className='ItemCard'>
+                      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <CardContent>
+                        <FolderIcon sx={{alignSelf:'center',height:'80px',width:'100%',color:green[300]}}></FolderIcon>
+                          
+                          <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>All</Typography>
+                        </CardContent>
+                      </Box>
+                    </Card>
+                  </Grid>
+              {sharedAlbums.map((item, index) => {
+                const filenameParts = item.split('-album-');
+                const filename = filenameParts[1]+"("+filenameParts[0] + ")";
+
+                return (
+                  <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange(filename)}>
+                    <Card className='ItemCard'>
+                      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <CardContent>
+                        <FolderIcon sx={{alignSelf:'center',height:'80px',width:'100%',color:green[300]}}></FolderIcon>
+                          
+                          <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>{filename}</Typography>
+                        </CardContent>
+                      </Box>
+                    </Card>
+                  </Grid>
+                );
+              })}
           </Grid>
 
           <Typography sx={{width:'100%',marginTop:'10px',marginLeft:'20px',color:blue[500],fontSize:'32px'}}>{albumNamePath}</Typography>
@@ -365,31 +408,12 @@ function Home() {
 
               return (
                   <Grid item key={index}   >
-                    <DialogComponent item={item} albumName={albumNamePath} />
+                    <DialogComponent item={item} albumName={albumNamePath} user = {filenameParts[0]} />
                   </Grid>
               );
             })}
         </Grid>
 
-        <hr style={{ marginTop: '20px',width: '100%' }} /> {/* Horizontal line */}
-        <Typography sx={{width:'100%',marginTop:'10px',marginLeft:'20px',color:green[500],fontSize:'32px'}}>Shared</Typography>
-
-        <Grid container spacing={2} sx={{marginTop:'20px'}}>
-            
-          </Grid>
-          <Grid container spacing={2} sx={{marginTop:'20px'}}>
-            {sharedContent.map((item, index) => {
-              const filenameParts = item.metadata.contentId.split('-file-');
-            
-               
-
-              return (
-                  <Grid item key={index}   >
-                    <DialogComponent item={item} albumName={albumNamePath}  />
-                  </Grid>
-              );
-            })}
-        </Grid>
         
 
 
