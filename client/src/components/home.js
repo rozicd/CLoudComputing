@@ -10,11 +10,13 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CreateNewFolder from '@mui/icons-material/CreateNewFolder'
 import DialogComponent from "./itemdetails"
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import EditIcon from '@mui/icons-material/Edit';
 
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import './home.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { blue, orange } from '@mui/material/colors';
+import { blue, orange, purple, red } from '@mui/material/colors';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -256,6 +258,14 @@ function Home() {
     console.log(usernames)
   }
 
+  const handleDeleteAlbum = (fileName) => {
+    console.log('delete '+fileName)
+  }
+
+  const handleEditAlbum = (fileName) => {
+    console.log('edit'+fileName)
+  } 
+
   return (
     <div className="home-container">
       <AppBar position="static" className="home-app-bar">
@@ -299,19 +309,29 @@ function Home() {
               {albums.map((item, index) => {
                 const filenameParts = item.contentId.split('-album-');
                 const filename = filenameParts[1];
+                const showDeleteButton = filename !== 'default'
 
                 return (
-                  <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange(filename)}>
+                  <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }}>
                     <Card className='ItemCard'>
                       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <CardContent>
-                        <FolderIcon sx={{alignSelf:'center',height:'80px',width:'100%',color:orange[300]}}></FolderIcon>
-                          
-                          <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>{filename}</Typography>
+                        <CardContent onClick={() => handleAlbumChange(filename)}>
+                          <FolderIcon sx={{ alignSelf: 'center', height: '80px', width: '100%', color: orange[300] }} />
+                          <Typography sx={{ width: '100%', marginTop: '10px', alignSelf: 'center', textAlign: 'center' }}>{filename}</Typography>
                         </CardContent>
+                        {showDeleteButton && (
+                          
+                          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
+     
+                            <Button sx={{ width: '30px', height: '30px', alignSelf: 'auto', marginBottom:"10px" }} onClick={handleDeleteAlbum(filename)} startIcon={<EditIcon sx={{ width: '25px', height: '30px', color: purple[800] }} />} />
+                            <Button sx={{ width: '30px', height: '30px', marginBottom:"10px", alignSelf: 'auto' }} onClick={handleEditAlbum(filename)} startIcon={<DeleteForeverIcon sx={{ width: '25px', height: '30px', color: red[800] }} />} />
+                            
+                          </Box>
+                        )}
                       </Box>
                     </Card>
                   </Grid>
+
                 );
               })}
           </Grid>

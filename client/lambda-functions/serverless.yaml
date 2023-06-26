@@ -66,6 +66,23 @@ package:
     - 'utility/**'
 
 functions:
+  deleteAlbum:
+    handler: delete-album/delete_album.delete
+    package:
+      include: 'delete-album/**'
+    events:
+      - http:
+          path: deletealbum/{id}
+          method: delete
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                album: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
   deleteContent:
     handler: delete-content/delete_content.delete
     package:
