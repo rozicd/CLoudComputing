@@ -60,6 +60,7 @@ function Home() {
       setShowConfirmationDialog(false);
       return;
     }
+    console.log(file)
     setSelectedFile(file);
     setShowConfirmationDialog(true);
   };

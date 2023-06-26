@@ -48,6 +48,7 @@ def create(event, context):
     response = table.put_item(
         Item={
             'contentId': username+"-time-" + timestamp+"-file-"+file_name,
+            'name': file_name,
             'type': file_type,
             'size': file_size,
             'lastModified': file_last_modified,
