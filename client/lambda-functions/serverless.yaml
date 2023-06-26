@@ -66,6 +66,19 @@ package:
     - 'utility/**'
 
 functions:
+  deleteContent:
+    handler: delete-content/delete_content.delete
+    package:
+      include: 'delete-content/**'
+    events:
+      - http:
+          path: deletefile/{id}
+          method: delete
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
   createContent:
     handler: create-content/create_content.create
     package:
