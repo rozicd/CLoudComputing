@@ -16,17 +16,18 @@ import {
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
-import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
+import SmartDisplay from '@mui/icons-material/SmartDisplay';
 import EditIcon from '@mui/icons-material/Edit';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './itemdetails.css';
-import { blue, orange, purple } from '@mui/material/colors';
+import { blue, green, orange, purple, red } from '@mui/material/colors';
 
-function DialogComponent({ item }) {
+function DialogComponent({albumName, item }) {
   const [open, setOpen] = useState(false);
 
+  
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -60,12 +61,18 @@ function DialogComponent({ item }) {
               "Authorization": token,
               'Content-Type': 'application/json',
             },
+            params: {
+              album: albumName, 
+            }
           });
+
   
           if (response.status === 200) {
+            window.location.reload();
+
                 console.log('File deleted');
                 } else {
-                // Handle error
+                window.location.reload();
                 console.error('Error deleting file');
                 }
           } catch (error) {
@@ -78,16 +85,16 @@ function DialogComponent({ item }) {
             <CardContent>
             <Typography variant="h6">{item.metadata.caption}</Typography>
             {item.metadata.type.startsWith('image') ? (
-              <ImageIcon sx={{width:'100%',height:'40%',alignSelf:'center',color:blue[800]}} />
+              <ImageIcon sx={{width:'100%',height:'85px',alignSelf:'center',color:blue[800]}} />
 
             ) : (
               <div className="default-icon">
                 {item.metadata.type.startsWith('audio') ? (
-                  <MusicNoteIcon sx={{width:'100%',height:'100px',alignSelf:'center',color:purple[800]}}/>
+                  <MusicNoteIcon sx={{width:'100%',height:'85px',alignSelf:'center',color:purple[800]}}/>
                 ) : item.metadata.type.startsWith('video') ? (
-                  <VideoLibraryIcon sx={{width:'100%',height:'100px',alignSelf:'center',color:orange[800]}} />
+                  <SmartDisplay sx={{width:'100%',height:'85px',alignSelf:'center',color:red[800]}} />
                 ) : (
-                  <InsertDriveFileIcon sx={{width:'100%',height:'100px',alignSelf:'center',color:blue[800]}} />
+                  <InsertDriveFileIcon sx={{width:'100%',height:'85px',alignSelf:'center',color:green[800]}} />
                 )}
               </div>
             )}

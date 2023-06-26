@@ -75,6 +75,10 @@ functions:
           path: deletefile/{id}
           method: delete
           cors: true
+          request:
+            parameters:
+              querystrings:
+                album: true
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
@@ -130,6 +134,10 @@ functions:
           # HTTP method for this endpoint
           method: get
           # Enable CORS. Don't forget to return the right header in your response
+          request:
+            parameters:
+              querystrings:
+                album: true
           cors: true
           authorizer:
             type: COGNITO_USER_POOLS

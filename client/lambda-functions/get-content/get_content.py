@@ -9,24 +9,41 @@ bucket_name = os.environ['BUCKET_NAME']
 def get_all(event, context):
     # Assuming you have the JWT token in the 'Authorization' header
     username = event['requestContext']['authorizer']['claims']['cognito:username']
+    folder_name = '-album-'+event['queryStringParameters'].get('album')
 
     # Configure the DynamoDB client
     dynamodb = boto3.resource('dynamodb')
     s3_client = boto3.client('s3')
     table = dynamodb.Table(table_name)
+    album_table = dynamodb.Table("albums")
 
-    response = table.scan(
-    FilterExpression='begins_with(#file, :prefix)',
-    ExpressionAttributeNames={'#file': 'contentId'},
-    ExpressionAttributeValues={':prefix': username}
-)
+    folder = None
+    try:
+        folder = album_table.get_item(
+            Key={
+                'contentId': username + folder_name,
+            }
+        )
+    
+    except Exception as e:
+        return create_response(500, {"message": str(e)})
+    folder_items = folder.get('Item', {}).get('images', [])
+    filesFromFolder = []
+    for item in folder_items:
+        xd = table.get_item(
+            Key={
+                'contentId': item,
+            })
+        filesFromFolder.append(xd.get('Item',{}))
+        
 
 
+
+    print(filesFromFolder)
     # Process the returned data
-    items = response['Items']
-    print(items)
     responseData = []
-    for data in items:
+    for data in filesFromFolder:
+        print(data)
         name = data['contentId']  
         response = s3_client.get_object(Bucket=bucket_name, Key=name)
         images = response['Body'].read() 

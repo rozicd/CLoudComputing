@@ -14,13 +14,14 @@ import DialogComponent from "./itemdetails"
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import './home.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { blue, orange } from '@mui/material/colors';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [showAlbumCreationDialog, setShowAlbumCreationDialog] = useState(false);
 
-  const [albumName, setAlbumName] = useState('');
+  const [albumName, setAlbumName] = useState('default');
   const [username, setUsername] = useState('');
   const [usernames, setUsernames] = useState([]);
 
@@ -50,6 +51,9 @@ function Home() {
           "Authorization": token,
           'Content-Type': 'application/json',
         },
+        params: {
+          album: albumNamePath, 
+        },
       });
       console.log(response.data);
       setContent(response.data.response);
@@ -58,27 +62,34 @@ function Home() {
     }
   };
 
-  const loadAlbums = async () =>{
-    const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getuseralbums'
+  const loadAlbums = async () => {
+    const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/getuseralbums';
     try {
       const session = await Auth.currentSession();
       const token = session.getIdToken().getJwtToken();
-
+  
       const response = await axios.get(endpoint, {
         headers: {
           "Authorization": token,
           'Content-Type': 'application/json',
         },
       });
-      console.log("albumi")
+  
+      console.log("albumi");
       console.log(response.data.Items);
-      setAlbums(response.data.Items)
+      setAlbums(response.data.Items);
+  
+      if (response.data.Items.length === 0) {
+        handleAlbumCreation();
+      }
     } catch (error) {
       console.log('Error retrieving content:', error);
     }
-  }
+  };
+
 
   useEffect(() => {
+    
     loadData();
     loadAlbums();
     return () => { };
@@ -129,7 +140,7 @@ function Home() {
             caption: '',
             tags: ["No"]
           },
-          foldername: '-album-'+albumNamePath
+          foldername: albumNamePath
         };
         const session = await Auth.currentSession();
         const token = session.getIdToken().getJwtToken();
@@ -277,7 +288,7 @@ function Home() {
               </div>)
             }
           </div>   
-          <Button onClick={handleAddAlbum} sx={{width:'10%', marginTop: '20px', alignSelf: 'center',justifySelf:'center',textAlign:'center'}}
+          <Button onClick={handleAddAlbum} sx={{width:'150px', marginTop: '20px',marginLeft:'20px', alignSelf: 'center',justifySelf:'center',textAlign:'center'}}
           variant="contained"
           color="primary"
           startIcon={<CreateNewFolder />}>
@@ -290,11 +301,11 @@ function Home() {
                 const filename = filenameParts[1];
 
                 return (
-                  <Grid item key={index} onClick={ ()=>handleAlbumChange(filename)}>
+                  <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange(filename)}>
                     <Card className='ItemCard'>
                       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                         <CardContent>
-                        <FolderIcon sx={{alignSelf:'center',height:'80px',width:'100%'}}></FolderIcon>
+                        <FolderIcon sx={{alignSelf:'center',height:'80px',width:'100%',color:orange[300]}}></FolderIcon>
                           
                           <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>{filename}</Typography>
                         </CardContent>
@@ -305,6 +316,7 @@ function Home() {
               })}
           </Grid>
           <hr style={{ marginTop: '20px',width: '100%' }} /> {/* Horizontal line */}
+          <Typography sx={{width:'100%',marginTop:'10px',marginLeft:'20px',color:blue[500],fontSize:'32px'}}>{albumNamePath}</Typography>
           <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
           <Dialog open={showConfirmationDialog} onClose={handleCancelUpload}>
             <DialogTitle>Confirm Upload</DialogTitle>
@@ -327,7 +339,7 @@ function Home() {
 
               return (
                   <Grid item key={index}   >
-                    <DialogComponent item={item} />
+                    <DialogComponent item={item} albumName={albumNamePath} />
                   </Grid>
               );
             })}
