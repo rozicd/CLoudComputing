@@ -224,12 +224,11 @@ function Home() {
         <Grid container spacing={2}>
             {content.map((item, index) => {
               const filenameParts = item.metadata.contentId.split('-file-');
-              const filename = filenameParts[1].split('-time-')[0];
-              var base64Content = "data:"+item.metadata.type+";base64,"+Buffer.from(item.content).toString('base64');
-              var decodedContent = Buffer.from(base64Content,'base64').toString('utf-8')
+            
+               
 
               return (
-                  <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                  <Grid item key={index}   >
                     <DialogComponent item={item} />
                   </Grid>
               );

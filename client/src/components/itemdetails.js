@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { Auth } from 'aws-amplify';
 import {
   Card,
   CardContent,
@@ -13,7 +15,9 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DownloadIcon from '@mui/icons-material/Download';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
+import './itemdetails.css';
 
 function DialogComponent({ item }) {
   const [open, setOpen] = useState(false);
@@ -25,6 +29,7 @@ function DialogComponent({ item }) {
   const handleClose = () => {
     setOpen(false);
   };
+  
 
   const handleDownload = () => {
     setOpen(false);
@@ -32,38 +37,56 @@ function DialogComponent({ item }) {
   const handleEdit = () => {
     setOpen(false);
   };
+  const handleDelete = async () => {
+    try {
+        const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/deletefile/'+item.metadata.contentId;
+  
+  
+
+          const session = await Auth.currentSession();
+          const token = session.getIdToken().getJwtToken();
+  
+  
+  
+          const response = await axios.delete(endpoint, {
+            headers: {
+              "Authorization": token,
+              'Content-Type': 'application/json',
+            },
+          });
+  
+          if (response.status === 200) {
+                console.log('File deleted');
+                } else {
+                // Handle error
+                console.error('Error deleting file');
+                }
+          } catch (error) {
+          console.error('Error deleting file:', error);
+        }  };
   return (
     <>
-        <Card>
+        <Card className='ItemCard'>
             <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardContent>
+            <CardContent>
                 <Typography variant="h6">{item.metadata.caption}</Typography>
                 {item.metadata.type.startsWith('image') ? (
-                    <img
-                    src={item.content}
+                <img
                     alt={item.metadata.caption}
                     style={{ objectFit: 'cover', maxHeight: '200px' }}
-                    />
+                />
                 ) : (
-                    <div className="default-icon">
-                    {/* Add your default icon or placeholder here */}
-                    </div>
+                <div className="default-icon">
+                </div>
                 )}
-                <Typography>
-                    {(() => {
-                    const filenameParts = item.metadata.contentId.split('-file-');
-                    const filename = filenameParts[1].split('-time-')[0];
-                    console.log(item.metadata)
-                    return filename;
-                    })()}
-                </Typography>
+                <Typography>Name: {item.metadata.filename}</Typography>
                 <Button onClick={handleClickOpen}>View Details</Button>
-                </CardContent>
+            </CardContent>
             </Box>
         </Card>
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
             <DialogTitle>Item Details</DialogTitle>
-            <DialogContent sx={{ marginLeft: '20%', marginRight: '20%', padding: '2rem', display: 'flex', flexDirection: 'column' }}>
+            <DialogContent sx={{ marginLeft: '15%', marginRight: '15%', padding: '2rem', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ marginBottom: '1rem' }}>
                 Metadata:
                 </Typography>
@@ -93,9 +116,6 @@ function DialogComponent({ item }) {
                 </div>
             </DialogContent>
             <DialogActions sx={{ justifyContent: 'center' }}>
-                <Button onClick={handleClose} variant="contained" color="primary">
-                Close
-                </Button>
                 <Button
                 variant="contained"
                 color="primary"
@@ -111,6 +131,14 @@ function DialogComponent({ item }) {
                 onClick={handleEdit}
                 >
                 Edit
+                </Button>
+                <Button
+                    variant="contained"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleDelete}
+                >
+                    Delete
                 </Button>
             </DialogActions>
             </Dialog>
