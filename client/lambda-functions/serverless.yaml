@@ -211,10 +211,24 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: Authorizer
-
-
-
-
+  editAlbum:
+    handler: edit-album/edit_album.update
+    package:
+      # Include 'createDogs' directory and all child directories
+      include: 'edit-album/**'
+    events:
+      # REST API endpoint of API Gateway
+      - http:
+          # Path for this endpoint
+          path: updateuseralbum
+          # HTTP method for this endpoint
+          method: put
+          # Enable CORS. Don't forget to return the right header in your response
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
 resources:
   Resources:
     ContentTable:
