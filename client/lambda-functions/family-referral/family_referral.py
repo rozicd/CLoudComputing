@@ -5,7 +5,7 @@ from utility.utils import create_response
 import uuid
 
 def send_email(event, context):
-    users = event['pathParameters']['username']
+    users = event
     username = users.split('-')[0]
     refered = users.split('-')[1]
     
@@ -51,7 +51,7 @@ def send_email(event, context):
             }
         )
 
-        return create_response(200, "Email sent successfully")
+        return {"users" : users}
 
     except cognito_client.exceptions.UserNotFoundException:
         return create_response(404, "User not found")
@@ -97,7 +97,8 @@ def adding_referal(event, context):
     return create_response(200, {"message": "referal created"})
 
 def check_if_added(event, context):
-    users = event['pathParameters']['username']
+    print(event)
+    users = event["users"]
     username = users.split('-')[0]
     refered = users.split('-')[1]
     dynamo = boto3.resource('dynamodb')
@@ -112,12 +113,45 @@ def check_if_added(event, context):
     families =  family.get('Item', {}).get('family', [])
     
     if refered in families:
-        return create_response(200, {"message": "He is there"})
+        return {"statusCode":200,"users":users}
     
-    return create_response(400, {"message": "not there"})
+    return {"statusCode":400,"users":users}
 
 def success_state(event, context):
-    print("Mile vozi belu limuzinu")
+    users = event["users"]
+    username = users.split('-')[0]
+    refered = users.split('-')[1]
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table("albums")
+    
+    response = table.scan(
+    FilterExpression='begins_with(#file, :prefix)',
+    ExpressionAttributeNames={'#file': 'contentId'},
+    ExpressionAttributeValues={':prefix': username}
+    )
+    print(response)
+    print(response.get("Item"))
+    for album in response.get("Items") :
+        print(album)
+        families =  album.get('sharedUsers', [])
+        albumname = album.get('contentId', "")
+        if refered not in families :
+            families.append(refered)
+            table.update_item(
+                Key={
+                    'contentId': albumname,
+                },
+                UpdateExpression='SET #attr = :val',
+                ExpressionAttributeNames={
+                    '#attr': 'sharedUsers',
+                },
+                ExpressionAttributeValues={
+                    ':val': families,
+                })
+            
+    return {"statusCode":200,}
+            
+
     
     
 def lambda_trigger(event, context):
@@ -130,8 +164,9 @@ def lambda_trigger(event, context):
         }
     }
     
+    
     response = stepfunctions_client.start_execution(
-        stateMachineArn='arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-sendFamilyRequestEmail',
+        stateMachineArn='arn:aws:states:eu-central-1:330709951601:stateMachine:familyRegistration',
         input=json.dumps(input_data)
     )
     
