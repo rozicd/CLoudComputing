@@ -19,6 +19,10 @@ async function Register(firstName, lastName, birthdate, username, email, passwor
       }
     });
     console.log(user);
+
+
+    
+
   } catch (error) {
     console.log('error signing up:', error);
   }

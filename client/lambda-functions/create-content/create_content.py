@@ -11,9 +11,14 @@ table_name = os.environ['TABLE_NAME']
 bucket_name = os.environ['BUCKET_NAME']
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
+sns_client = boto3.resource('sns')
 
 def create(event, context):
+    print("XDDDD")
+    print("XDDDD")
     username = event['requestContext']['authorizer']['claims']['cognito:username']
+    email = event['requestContext']['authorizer']['claims']['email']
+    sanitized_email = email.replace('@', '-').replace('.', '-')
     print(username)
     print(event['headers'])
     timestamp = str(datetime.timestamp(datetime.now()))
@@ -30,8 +35,6 @@ def create(event, context):
     tags = request_body['file']['tags']
     print(tags)
     shared = []
-    shared.append("goran")
-    shared.append("dejan")
     album_table = dynamodb.Table("albums")
     folder = None
     try:
@@ -82,5 +85,11 @@ def create(event, context):
     }
 )
     
+    sns_topic_arn = 'arn:aws:sns:eu-central-1:330709951601:user-topic-'+sanitized_email
+    print(sns_topic_arn)
+    sns_topic = sns_client.Topic(sns_topic_arn)
+    sns_topic.publish(
+        Message=file_name + " Uploaded Successfuly!"
+    )
     
     return create_response(200, {"message": "File uploaded successfully"})

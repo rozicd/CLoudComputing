@@ -3,11 +3,14 @@ import json
 import boto3
 from utility.utils import create_response
 
+sns_client = boto3.resource('sns')
 
 def delete(event, context):
   table_name = os.environ['TABLE_NAME']
   bucket_name = os.environ['BUCKET_NAME']
   album_table_name = os.environ['ALBUM_TABLE_NAME']
+  email = event['requestContext']['authorizer']['claims']['email']
+  sanitized_email = email.replace('@', '-').replace('.', '-')
   
   s3_client = boto3.client('s3')
   dynamodb = boto3.resource('dynamodb')
@@ -51,6 +54,16 @@ def delete(event, context):
           )
   except Exception as e:
       return create_response(500, {"message": str(e)})
+  sns_topic_arn = 'arn:aws:sns:eu-central-1:330709951601:user-topic-'+sanitized_email
+  print(sns_topic_arn)
+  sns_topic = sns_client.Topic(sns_topic_arn)
+  sns_topic.publish(
+  Message=folder_name + " Deleted Successfuly!")
+
+
+  
+    
+
     
   return create_response(200, {"message": "Album deleted successfully"})
 

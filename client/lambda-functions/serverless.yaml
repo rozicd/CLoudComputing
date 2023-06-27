@@ -33,6 +33,11 @@ provider:
         - "Fn::GetAtt": [ContentTable, Arn]
     - Effect: Allow
       Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+      Resource: "*"
+    - Effect: Allow
+      Action:
         - dynamodb:DescribeTable
         - dynamodb:Query
         - dynamodb:Scan
@@ -59,8 +64,10 @@ provider:
     - Effect: Allow
       Action:
         - "sns:Publish"
-      Resource:
-        Ref: MySNSTopic
+        - "sns:Subscribe"
+        - "sns:CreateTopic"
+      Resource: "*"
+       
 
 package:
   # Create separate zip for each Lambda function
@@ -90,6 +97,19 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: Authorizer
+  subscriteTopic:
+    handler: subscribe-topic/subscribe_topic.subscribe
+    package:
+      include: 'subscribe-topic/**'
+    events:
+      - http:
+          path: subscribe
+          method: get
+          cors: true
+          authorizer:
+              type: COGNITO_USER_POOLS
+              authorizerId:
+                Ref: Authorizer
   deleteContent:
     handler: delete-content/delete_content.delete
     package:
@@ -114,6 +134,19 @@ functions:
     events:
       - http:
           path: uploadfile
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  createContentAsync:
+    handler: create-content-async/create_content_async.create_async
+    package:
+      include: 'create-content-async/**'
+    events:
+      - http:
+          path: uploadfileasync
           method: post
           cors: true
           authorizer:
@@ -189,7 +222,24 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: Authorizer
-
+  editAlbum:
+    handler: edit-album/edit_album.update
+    package:
+      # Include 'createDogs' directory and all child directories
+      include: 'edit-album/**'
+    events:
+      # REST API endpoint of API Gateway
+      - http:
+          # Path for this endpoint
+          path: updateuseralbum
+          # HTTP method for this endpoint
+          method: put
+          # Enable CORS. Don't forget to return the right header in your response
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
 resources:
   Resources:
     ContentTable:
@@ -250,3 +300,12 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: my-content-bucket
+    MySQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: my-sqs-queue
+
+    MySNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: my-sns-topic

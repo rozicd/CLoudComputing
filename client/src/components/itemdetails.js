@@ -75,6 +75,29 @@ function DialogComponent({ albumName, item,user }) {
   };
 
   const handleDownload = () => {
+    // Decode the Base64 content
+    const decodedContent = atob(item.content);
+
+    // Convert the decoded content to a Uint8Array
+    const byteArray = new Uint8Array(decodedContent.length);
+    for (let i = 0; i < decodedContent.length; i++) {
+      byteArray[i] = decodedContent.charCodeAt(i);
+    }
+
+    // Create a Blob from the Uint8Array
+    const blob = new Blob([byteArray], { type: item.metadata.type });
+
+    // Generate a URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Create a link element and trigger the download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = item.metadata.name;
+    link.click();
+
+    // Clean up the URL and close the dialog if needed
+    URL.revokeObjectURL(url);
     setOpen(false);
   };
 
@@ -82,23 +105,45 @@ function DialogComponent({ albumName, item,user }) {
     setEditing(true);
   };
 
+  const [sharedUsers, setSharedUsers] = useState(item.metadata.shared);
+const [sharedUserInput, setSharedUserInput] = useState('');
+
+const handleAddSharedUser = () => {
+  if (sharedUserInput.trim() !== '') {
+    setSharedUsers([...sharedUsers, sharedUserInput.trim()]);
+    setSharedUserInput('');
+  }
+};
+
+const handleRemoveSharedUsers = (index) => {
+  const updatedSharedUsers = [...sharedUsers];
+  updatedSharedUsers.splice(index, 1);
+  setSharedUsers(updatedSharedUsers);
+};
+
   const handleUpdate = async () => {
     try {
       const endpoint =
-        'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/updatefile/' +
-        item.metadata.contentId;
+        'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/updateusercontent';
 
       const session = await Auth.currentSession();
       const token = session.getIdToken().getJwtToken();
 
+      const fileData = {
+        file: {
+          oldId: item.metadata.contentId,
+          filename: name+'.'+extension,
+          type: item.metadata.type,
+          size: item.metadata.size,
+          caption: caption,
+          tags: tags,
+          shared: sharedUsers
+        },
+        foldername: albumName
+      };
       const response = await axios.put(
         endpoint,
-        {
-          album: albumName,
-          name,
-          caption,
-          tags,
-        },
+        JSON.stringify(fileData),
         {
           headers: {
             Authorization: token,
@@ -281,6 +326,41 @@ function DialogComponent({ albumName, item,user }) {
                   ))}
                 </div>
           )}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Typography sx={{ width: '30%', fontWeight: 'bold', textAlign: 'left',flex: '1' }}>Shared Users:</Typography>
+            {editing ? (
+              <div style={{ display: 'flex', flexDirection: 'column', width: '70%', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <TextField
+                    sx={{ flex: '1' }}
+                    value={sharedUserInput}
+                    onChange={(e) => setSharedUserInput(e.target.value)}
+                    onKeyUp={(e) => {
+                      if (e.key === 'Enter') {
+                        handleAddSharedUser();
+                      }
+                    }}
+                  />
+                  <Button variant="contained" onClick={handleAddSharedUser} style={{ marginLeft: '8px' }}>
+                    Add
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                {item.metadata.shared.map((sharedUser, index) => (
+                  <Chip key={index} label={sharedUser} sx={{ marginBottom: '0.5rem', marginRight: '0.5rem' }} />
+                ))}
+              </div>
+            )}
+          </div>
+          {editing && (
+          <div style={{ display: 'flex', flexWrap: 'wrap',marginTop:'10px' }}>
+                  {sharedUsers.map((sharedUser, index) => (
+                    <Chip key={index} label={sharedUser} sx={{ marginBottom: '0.5rem', marginRight: '0.5rem' }} onDelete={() => handleRemoveSharedUsers(index)} />
+                  ))}
+                </div>
+          )}
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center' }}>
         {!editing && (
@@ -298,6 +378,8 @@ function DialogComponent({ albumName, item,user }) {
                 setName(item.metadata.name);
                 setCaption(item.metadata.caption);
                 setTags(item.metadata.tags);
+                setSharedUsers(item.metadata.shared);
+                setSharedUserInput('');
                 setEditing(false)}}>
                 Back
               </Button>
