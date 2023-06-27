@@ -10,11 +10,13 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CreateNewFolder from '@mui/icons-material/CreateNewFolder'
 import DialogComponent from "./itemdetails"
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import EditIcon from '@mui/icons-material/Edit';
 
 import { Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import './home.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { blue, green, orange } from '@mui/material/colors';
+import { blue, green, orange, red, purple } from '@mui/material/colors';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -24,6 +26,10 @@ function Home() {
   const [albumName, setAlbumName] = useState('default');
   const [username, setUsername] = useState('');
   const [usernames, setUsernames] = useState([]);
+
+  const [albumsUsernames, setAlbumUsernames] = useState([]);
+  const [albumsUsernamesInput, setAlbumUsernamesInput] = useState('');
+  const [showAlbumEditDialog, setShowAlbumEditDialog] = useState(false);
 
   const [caption, setCaption] = useState('');
   const [tagInput, setTagInput] = useState('');
@@ -290,11 +296,24 @@ function Home() {
       setTagInput('');
     }
   };
-  
+
   const handleTagDelete = (index) => {
     const newTags = [...tags];
     newTags.splice(index, 1);
     setTags(newTags);
+  };
+
+  const handleUsernameAdd = () => {
+    if (albumsUsernamesInput.trim() !== '') {
+      setAlbumUsernames([...albumsUsernames, albumsUsernamesInput.trim()]);
+      setAlbumUsernamesInput('');
+    }
+  };
+  
+  const handleUsernamesDelete = (index) => {
+    const newUsernames = [...albumsUsernames];
+    newUsernames.splice(index, 1);
+    setAlbumUsernames(newUsernames);
   };
 
   const handleDrop = (event) => {
@@ -309,8 +328,18 @@ function Home() {
     }
   };
 
+  const setAlbumsSharedUsers = (albumName) =>{
+    albums.forEach(album=>{
+      if (album.contentId.includes(albumName)){
+        setAlbumUsernames(album.sharedUsers)
+      }
+    })
+
+  }
+
   const handleAlbumChange = (albumName) => {
     setAlbumNamePath(albumName);
+    setAlbumsSharedUsers(albumName)
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.set('album', albumName);
     const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
@@ -330,6 +359,88 @@ function Home() {
     window.history.replaceState({}, '', newUrl); 
       setContent(sharedContent);
   }
+
+  const handleEditAlbum = async(fileName) =>{
+    setShowAlbumEditDialog(true)
+    console.log("edit "+fileName)
+  }
+
+  const handleCanacelEditAlbum = () => {
+    setShowAlbumEditDialog(false)
+    setAlbumUsernamesInput('')
+  }
+
+  const handleEditAlbumConfirmation = async() =>{
+    console.log("############ovo ce se promeniti")
+    console.log(albumNamePath)
+    try{
+      const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/updateuseralbum'
+    const session = await Auth.currentSession();
+    const token = session.getIdToken().getJwtToken();
+
+    const album = {
+      album :{
+          albumname : albumNamePath,
+          sharedusers: albumsUsernames
+      }
+    }
+    const response = await axios.put(
+      endpoint,
+      JSON.stringify(album),
+      {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      window.location.reload();
+      console.log('Album updated');
+    } else {
+      window.location.reload();
+      console.error('Error updating file');
+    }
+    }catch(error){
+      console.error(error)
+    }
+
+  }
+
+  const handleDeleteAlbum = async(fileName) =>{
+    try {
+      const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/deletealbum/'+fileName;
+      console.log(endpoint)
+        const session = await Auth.currentSession();
+        const token = session.getIdToken().getJwtToken();
+
+        const response = await axios.delete(endpoint, {
+          headers: {
+            "Authorization": token,
+            'Content-Type': 'application/json',
+          },
+          params: {
+            album: fileName, 
+          }
+        });
+
+
+        if (response.status === 200) {
+          window.location.reload();
+
+              console.log('File deleted');
+              } else {
+              window.location.reload();
+              console.error('Error deleting file');
+              }
+        } catch (error) {
+        console.error('Error deleting file:', error);
+      } 
+
+    console.log('delete '+fileName)
+  }
+
 
   return (
     <div className="home-container">
@@ -375,6 +486,8 @@ function Home() {
                 const filenameParts = item.contentId.split('-album-');
                 const filename = filenameParts[1];
 
+                const showManagingButtons = filename !== 'default'
+
                 return (
                   <Grid item key={index} sx={{ '&:hover': { cursor: 'pointer' } }} onClick={ ()=>handleAlbumChange(filename)}>
                     <Card className='ItemCard'>
@@ -383,8 +496,18 @@ function Home() {
                         <FolderIcon sx={{alignSelf:'center',height:'80px',width:'100%',color:orange[300]}}></FolderIcon>
                           
                           <Typography sx={{width:'100%',marginTop:'10px',alignSelf:'center',textAlign:'center'}}>{filename}</Typography>
+                          {showManagingButtons && (
+                          
+                          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
+     
+                            <Button sx={{ width: '30px', height: '30px', alignSelf: 'auto', marginBottom:"10px" }} onClick={()=>handleEditAlbum(filename)}><EditIcon sx={{ width: '25px', height: '30px', color: purple[800] }}/></Button>
+                            <Button sx={{ width: '30px', height: '30px', marginBottom:"10px", alignSelf: 'auto' }} onClick={()=>handleDeleteAlbum(filename)}><DeleteForeverIcon sx={{ width: '25px', height: '30px', color: red[800] }} /></Button>
+                            
+                          </Box>
+                        )}
                         </CardContent>
                       </Box>
+                      
                     </Card>
                   </Grid>
                 );
@@ -465,7 +588,7 @@ function Home() {
               </Button>
             </DialogActions>
           </Dialog>
-
+          
 
           
         </Grid>
@@ -485,53 +608,93 @@ function Home() {
             })}
         </Grid>
 
+        <Dialog open={showAlbumEditDialog} onClose={handleCanacelEditAlbum}>
+            <DialogTitle>Edit Album</DialogTitle>
+            <DialogContent>
+              <Box display="flex" alignItems="center" mt={2}>
+                <TextField
+                  label="Usernames"
+                  value={albumsUsernamesInput}
+                  onChange={(e) => setAlbumUsernamesInput(e.target.value)}
+                  onKeyUp={(e) => {
+                    if (e.key === 'Enter') {
+                      handleUsernameAdd();
+                    }
+                  }}
+                />
+                <Button variant="contained" onClick={handleUsernameAdd} style={{ marginLeft: '8px' }}>
+                  Add
+                </Button>
+              </Box>
+              {albumsUsernames.length > 0 && (
+                <Box display="flex" flexWrap="wrap" mt={2}>
+                  {albumsUsernames.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={tag}
+                      onDelete={() => handleUsernamesDelete(index)}
+                      style={{ marginRight: '8px', marginTop: '4px' }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCanacelEditAlbum} color="error" variant="contained" startIcon={<CancelIcon />}>
+                Cancel
+              </Button>
+              <Button onClick={handleEditAlbumConfirmation} color="primary" variant="contained" startIcon={<CloudUploadIcon/>}>
+                Update
+              </Button>
+            </DialogActions>
+          </Dialog>
         
 
 
-        <Dialog open={showAlbumCreationDialog} onClose={handleCancelAlbumCreation}>
-    <DialogTitle>Album creation</DialogTitle>
-    <DialogContent>
-      <TextField
-        label="Album Name"
-        fullWidth
-        margin="normal"
-        variant="outlined"
-        value={albumName}
-        onChange={(e) => setAlbumName(e.target.value)}
-        // Add the necessary props and onChange handler as needed
-      />
+    <Dialog open={showAlbumCreationDialog} onClose={handleCancelAlbumCreation}>
+      <DialogTitle>Album creation</DialogTitle>
+      <DialogContent>
+        <TextField
+          label="Album Name"
+          fullWidth
+          margin="normal"
+          variant="outlined"
+          value={albumName}
+          onChange={(e) => setAlbumName(e.target.value)}
+          // Add the necessary props and onChange handler as needed
+        />
 
-      <TextField
-        label="Usernames"
-        fullWidth
-        margin="normal"
-        variant="outlined"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        // Add the necessary props and onChange handler as needed
-      />
+        <TextField
+          label="Usernames"
+          fullWidth
+          margin="normal"
+          variant="outlined"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          // Add the necessary props and onChange handler as needed
+        />
 
-      <Button
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddUsername}
+          // Add onClick handler for the add button next to the usernames input field
+        >
+          Add
+        </Button>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCancelAlbumCreation}
+        variant="contained"
+        startIcon= {<CancelIcon/>}
+        color="error"
+        >Cancel</Button>
+        <Button onClick={handleAlbumCreation}
         variant="contained"
         color="primary"
-        onClick={handleAddUsername}
-        // Add onClick handler for the add button next to the usernames input field
-      >
-        Add
-      </Button>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={handleCancelAlbumCreation}
-      variant="contained"
-      startIcon= {<CancelIcon/>}
-      color="error"
-      >Cancel</Button>
-      <Button onClick={handleAlbumCreation}
-      variant="contained"
-      color="primary"
-        startIcon={<CloudUploadIcon />}
-      >Upload</Button>
-    </DialogActions>
+          startIcon={<CloudUploadIcon />}
+        >Upload</Button>
+      </DialogActions>
     </Dialog>
         
       </Grid>
