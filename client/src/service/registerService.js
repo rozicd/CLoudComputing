@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Auth } from 'aws-amplify';
 
 
-async function Register(firstName, lastName, birthdate, username, email, password) {
+async function Register(firstName, lastName, birthdate, username, email, password,referral) {
   try {
     const { user } = await Auth.signUp({
       username: username,
@@ -19,7 +19,9 @@ async function Register(firstName, lastName, birthdate, username, email, passwor
       }
     });
     console.log(user);
-
+    if(referral != ''){
+      
+    }
 
     
 

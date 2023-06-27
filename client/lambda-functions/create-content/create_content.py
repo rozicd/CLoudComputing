@@ -32,7 +32,7 @@ def create(event, context):
     file_type = request_body['file']['type']
     file_last_modified = request_body['file']['lastModified']
     caption = request_body['file']['caption']
-    tags = request_body['file']['tags']
+    tags = request_body['file']['tags'] 
     print(tags)
     shared = []
     album_table = dynamodb.Table("albums")

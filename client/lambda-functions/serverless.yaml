@@ -1,6 +1,9 @@
 service: api-gateway-demo
 frameworkVersion: '3'
 
+plugins:
+  - serverless-step-functions
+
 provider:
   name: aws
   runtime: python3.7
@@ -33,6 +36,17 @@ provider:
         - "Fn::GetAtt": [ContentTable, Arn]
     - Effect: Allow
       Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "Fn::GetAtt": [FamilyTable, Arn]
+    - Effect: Allow
+      Action:
         - lambda:InvokeFunction
         - lambda:InvokeAsync
       Resource: "*"
@@ -62,11 +76,25 @@ provider:
       Resource:
         - "Fn::GetAtt": [MySQSQueue, Arn]
     - Effect: Allow
+      Action: "ses:SendEmail"
+      Resource: 
+        - "*"
+    - Effect: Allow
       Action:
         - "sns:Publish"
         - "sns:Subscribe"
         - "sns:CreateTopic"
       Resource: "*"
+    - Effect: Allow
+      Action:
+        - "cognito-idp:AdminGetUser"
+        - "cognito-idp:AdminInitiateAuth"
+        - "cognito-idp:AdminRespondToAuthChallenge"
+        - "cognito-idp:CreateUserPoolClient"
+        - "cognito-idp:CreateUserPool"
+        - "cognito-idp:UpdateUserPoolClient"
+      Resource:
+        - "*"
        
 
 package:
@@ -240,6 +268,31 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: Authorizer
+  sendFamilyRequestEmail:
+    handler: family-referral/family_referral.send_email
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: family-referral/{username}
+          method: get
+          cors: true
+    
+
+stepFunctions:
+  stateMachines:
+    delivery:
+      name: 'familyRegistration'
+      definition:
+        Comment: "Family registration start"
+        StartAt: SendFamilyRequestEmail
+        States:
+          SendFamilyRequestEmail:
+            Type: Task
+            Resource: "arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-sendFamilyRequestEmail"
+            End: true
+
+    
 resources:
   Resources:
     ContentTable:
@@ -251,6 +304,19 @@ resources:
             AttributeType: S
         KeySchema:
           - AttributeName: contentId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    FamilyTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: family
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
