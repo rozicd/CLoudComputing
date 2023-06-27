@@ -43,8 +43,7 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource:
-        - "Fn::GetAtt": [FamilyTable, Arn]
+      Resource: "*"
     - Effect: Allow
       Action:
         - lambda:InvokeFunction
@@ -277,8 +276,43 @@ functions:
           path: family-referral/{username}
           method: get
           cors: true
+  addingReferal:
+    handler: family-referral/family_referral.adding_referal
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: confirm-referral/{username}/{token}
+          method: get
+          cors: true
+  familyCheck:
+    handler: family-referral/family_referral.check_if_added
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: family-check/{username}
+          method: get
+          cors: true
+  SuccessState:
+    handler: family-referral/family_referral.success_state
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: family-success-state
+          method: get
+          cors: true
+  lambdaTrigger:
+    handler: family-referral/family_referral.lambda_trigger
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: lambda-trigger/{username}
+          method: get
+          cors: true
     
-
 stepFunctions:
   stateMachines:
     delivery:
@@ -290,9 +324,30 @@ stepFunctions:
           SendFamilyRequestEmail:
             Type: Task
             Resource: "arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-sendFamilyRequestEmail"
-            End: true
-
-    
+            Next: familyCheck
+          familyCheck:
+            Type: Task
+            Resource: "arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-familyCheck"
+            Retry:
+              - ErrorEquals: ["States.ALL"]
+                IntervalSeconds: 5  # Retry after 5 seconds
+                MaxAttempts: 12  # Retry for a maximum of 12 times (5 seconds x 12 = 60 seconds)
+            Next: CheckStatus
+          CheckStatus:
+            Type: Choice
+            Choices:
+              - Variable: "$.status"
+                NumericEquals: 200
+                Next: SuccessState
+            Default: WaitBeforeRetry
+          WaitBeforeRetry:
+            Type: Wait
+            Seconds: 5  # Wait for 5 seconds before retrying familyCheck
+            Next: familyCheck
+          SuccessState:
+            Type: Task
+            Resource: "arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-SuccessState"
+            End: true  
 resources:
   Resources:
     ContentTable:
