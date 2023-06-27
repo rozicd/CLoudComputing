@@ -33,8 +33,28 @@ def create(event, context):
     file_last_modified = request_body['file']['lastModified']
     caption = request_body['file']['caption']
     tags = request_body['file']['tags'] 
-    print(tags)
-    shared = []
+    
+    if request_body['foldername'].startswith('Shared') or request_body['foldername'].startswith('All'):
+        return create_response(400, {"message": "Cannot add into shared or all folder"})
+    family_table = dynamodb.Table("family")
+    family_item = None
+
+    try:
+        family_item = family_table.get_item(
+            Key={
+                'username': username,
+            }
+        )
+    except Exception as e:
+        return create_response(500, {"message": str(e)})
+    item = family_item.get("Item",{})
+    usersFamily = item.get("family",[])
+
+    print(50)
+    if request_body['foldername'] == "default":    
+        shared = usersFamily
+    else:
+        shared = []
     album_table = dynamodb.Table("albums")
     folder = None
     try:

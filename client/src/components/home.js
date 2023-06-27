@@ -618,7 +618,7 @@ function Home() {
 
               return (
                   <Grid item key={index}   >
-                    <DialogComponent item={item} albumName={albumNamePath} user = {filenameParts[0]} />
+                    <DialogComponent item={item} albumName={albumNamePath} user = {filenameParts[0]} albums={albums} />
                   </Grid>
               );
             })}

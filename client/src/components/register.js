@@ -26,7 +26,7 @@ function RegisterPage(props) {
     };
 
     return (
-        <Card className="register-form-card">
+        <Card className="register-form-card" sx={{height:'760px'}}>
             <CardContent className="login-card-content">
                 <h1 className="h1-register">Register</h1>
                 <TextField label="Username" fullWidth margin="normal" value={username} onChange={(e) => setUsername(e.target.value)} />

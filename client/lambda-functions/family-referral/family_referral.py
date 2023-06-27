@@ -51,7 +51,7 @@ def send_email(event, context):
             }
         )
 
-        return {"users" : users}
+        return {"users" : users,"retryCount":0}
 
     except cognito_client.exceptions.UserNotFoundException:
         return create_response(404, "User not found")
@@ -97,8 +97,8 @@ def adding_referal(event, context):
     return create_response(200, {"message": "referal created"})
 
 def check_if_added(event, context):
-    print(event)
     users = event["users"]
+    retryCount = event["retryCount"]+1
     username = users.split('-')[0]
     refered = users.split('-')[1]
     dynamo = boto3.resource('dynamodb')
@@ -113,9 +113,9 @@ def check_if_added(event, context):
     families =  family.get('Item', {}).get('family', [])
     
     if refered in families:
-        return {"statusCode":200,"users":users}
+        return {"statusCode":200,"users":users,"retryCount":0}
     
-    return {"statusCode":400,"users":users}
+    return {"statusCode":400,"users":users,"retryCount":retryCount}
 
 def success_state(event, context):
     users = event["users"]
@@ -135,19 +135,47 @@ def success_state(event, context):
         print(album)
         families =  album.get('sharedUsers', [])
         albumname = album.get('contentId', "")
-        if refered not in families :
-            families.append(refered)
-            table.update_item(
-                Key={
-                    'contentId': albumname,
-                },
-                UpdateExpression='SET #attr = :val',
-                ExpressionAttributeNames={
-                    '#attr': 'sharedUsers',
-                },
-                ExpressionAttributeValues={
-                    ':val': families,
-                })
+        if not albumname.endswith("default"):
+            if refered not in families :
+                families.append(refered)
+                table.update_item(
+                    Key={
+                        'contentId': albumname,
+                    },
+                    UpdateExpression='SET #attr = :val',
+                    ExpressionAttributeNames={
+                        '#attr': 'sharedUsers',
+                    },
+                    ExpressionAttributeValues={
+                        ':val': families,
+                    })
+        else:
+            images = album.get('images', [])
+            for image in images:
+                fileTable = dynamodb.Table("content")
+                itemResponse = fileTable.get_item(
+                    Key={
+                        'contentId': image,
+                    }
+                )
+                item = itemResponse.get('Item', {})
+                shared = item.get('shared',[])
+                if refered not in shared:
+                    shared.append(refered)
+                    fileTable.update_item(
+                    Key={
+                        'contentId': image,
+                    },
+                    UpdateExpression='SET #attr = :val',
+                    ExpressionAttributeNames={
+                        '#attr': 'shared',
+                    },
+                    ExpressionAttributeValues={
+                        ':val': shared,
+                    })
+                
+                
+      
             
     return {"statusCode":200,}
             
@@ -170,3 +198,34 @@ def lambda_trigger(event, context):
         input=json.dumps(input_data)
     )
     
+def fail_state(event,context):
+    users = event["users"]
+    username = users.split('-')[0]
+    refered = users.split('-')[1]
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table("family")
+
+    unique_token = str(uuid.uuid4())
+    table.update_item(
+    Key={
+        'username': username,
+    },
+    UpdateExpression='SET #tok = :tok',
+    ExpressionAttributeNames={
+        '#tok': 'uniqueInviteToken'
+    },
+    ExpressionAttributeValues={
+        ':tok': unique_token
+    })
+    
+    client = boto3.client('cognito-idp')
+    user_pool_id = 'eu-central-1_IvEUKvEb1'
+    try:
+        client.admin_delete_user(
+            UserPoolId=user_pool_id,
+            Username=refered
+        )
+    except Exception as e:
+        return f"An error occurred while deleting user: {str(e)}"
+    
+    return "Failed :("

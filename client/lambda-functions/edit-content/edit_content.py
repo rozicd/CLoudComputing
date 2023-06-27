@@ -17,13 +17,14 @@ def update(event, context):
     request_body = json.loads(event['body'])
     
     file_name = request_body['file']['filename']
-    file_last_modified = str(datetime.timestamp(datetime.now()))
+    file_last_modified = str(datetime.timestamp(datetime.now())*1000)
     caption = request_body['file']['caption']
     tags = request_body['file']['tags']
     size = request_body['file']['size']
     type = request_body['file']['type']
     shared = request_body['file']['shared']
     album = username+ '-album-'+ request_body['foldername']
+    updatedalbum = username+ '-album-'+ request_body['newalbum']
     old_id = request_body['file']['oldId']
     new_id = username+"-time-" + file_last_modified+"-file-"+file_name
     print(tags)
@@ -79,24 +80,65 @@ def update(event, context):
     except ClientError as e:
         return create_response(500, {"message": "An error occurred while adding the new item in DynamoDB"})
     
-    
-    folder_items = folder.get('Item', {}).get('images', [])
-    
-    if old_id in folder_items:
-        index = folder_items.index(old_id)
-        folder_items[index] = new_id    
+    if updatedalbum != album:
+        folder_items = folder.get('Item', {}).get('images', [])
         
-    album_table.update_item(
-    Key={
-        'contentId': album,
-    },
-    UpdateExpression='SET #attr = :val',
-    ExpressionAttributeNames={
-        '#attr': 'images',
-    },
-    ExpressionAttributeValues={
-        ':val': folder_items,
-    })
+        if old_id in folder_items:
+            index = folder_items.index(old_id)
+            folder_items.remove(folder_items[index])   
+            
+        album_table.update_item(
+        Key={
+            'contentId': album,
+        },
+        UpdateExpression='SET #attr = :val',
+        ExpressionAttributeNames={
+            '#attr': 'images',
+        },
+        ExpressionAttributeValues={
+            ':val': folder_items,
+        })
+        updatedfolder = None
+        try:
+            updatedfolder = album_table.get_item(
+                Key={
+                    'contentId':  updatedalbum,
+                }
+            )
+            updated_folder_items = updatedfolder.get('Item', {}).get('images', [])
+            updated_folder_items.append(new_id)
+
+        except Exception as e:
+            return create_response(500, {"message": str(e)})
+        album_table.update_item(
+        Key={
+            'contentId': updatedalbum,
+        },
+        UpdateExpression='SET #attr = :val',
+        ExpressionAttributeNames={
+            '#attr': 'images',
+        },
+        ExpressionAttributeValues={
+            ':val': updated_folder_items,
+        })
+    else:
+        folder_items = folder.get('Item', {}).get('images', [])
+        
+        if old_id in folder_items:
+            index = folder_items.index(old_id)
+            folder_items[index] = new_id    
+            
+        album_table.update_item(
+        Key={
+            'contentId': album,
+        },
+        UpdateExpression='SET #attr = :val',
+        ExpressionAttributeNames={
+            '#attr': 'images',
+        },
+        ExpressionAttributeValues={
+            ':val': folder_items,
+        })
 
     
     try:

@@ -19,8 +19,22 @@ async function Register(firstName, lastName, birthdate, username, email, passwor
       }
     });
     console.log(user);
+    console.log(referral);
+    console.log("ASFLKPASFKASOP")
     if(referral != ''){
-      
+      try{
+        const endpoint = 'https://nr9rkx23s6.execute-api.eu-central-1.amazonaws.com/dev/lambda-trigger/'+referral+"-"+username
+  
+      const response = await axios.get(endpoint);
+  
+      if (response.status === 200) {
+        console.log('Referral process started');
+      } else {
+        console.error('Error updating file');
+      }
+      }catch(error){
+        console.error(error)
+      }
     }
 
     

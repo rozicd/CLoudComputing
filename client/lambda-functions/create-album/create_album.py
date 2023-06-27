@@ -25,7 +25,22 @@ def create_album(event, context):
     if album_name in album['contentId']:
       return create_response(400, {"message", "Album name already exists!"})
 
+  family_table = dynamodb.Table("family")
+  family_item = None
+
+  try:
+      family_item = family_table.get_item(
+          Key={
+              'username': username,
+          }
+      )
+  except Exception as e:
+      return create_response(500, {"message": str(e)})
+  item = family_item.get("Item",{})
+  usersFamily = item.get("family",[])
   shared_users = request_body['album']['sharedusers']
+  for elem in usersFamily:
+    shared_users.append(elem)
   album = {
     "contentId": username+"-album-"+album_name,
     "images": [],

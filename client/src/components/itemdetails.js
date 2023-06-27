@@ -27,7 +27,7 @@ import { Link, useLocation } from 'react-router-dom';
 import './itemdetails.css';
 import { blue, green, orange, purple, red } from '@mui/material/colors';
 
-function DialogComponent({ albumName, item,user }) {
+function DialogComponent({ albumName, item,user,albums }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [caption, setCaption] = useState(item.metadata.caption);
@@ -36,11 +36,13 @@ function DialogComponent({ albumName, item,user }) {
   const [name, setName] = useState(item.metadata.name.split('.')[0]); 
   const [username, setUsername] = useState(); 
   const extension = item.metadata.name.split('.')[1]; 
+  const [album, setAlbum] = useState(albumName);
   
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
+  const albumOptions = albums.map((album) => {
+    const contentIdParts = album.contentId.split('-');
+    const rightmostPart = contentIdParts[contentIdParts.length - 1];
+    return rightmostPart;
+  });
   const claimUsernameFromSession = async () => {
     
     try {
@@ -72,6 +74,11 @@ function DialogComponent({ albumName, item,user }) {
     setEditing(false);
     setOpen(false);
     setTagInput('');
+  };
+
+  const handleClickOpen = () => {
+
+    setOpen(true);
   };
 
   const handleDownload = () => {
@@ -139,7 +146,8 @@ const handleRemoveSharedUsers = (index) => {
           tags: tags,
           shared: sharedUsers
         },
-        foldername: albumName
+        foldername: albumName,
+        newalbum: album
       };
       const response = await axios.put(
         endpoint,
@@ -269,6 +277,26 @@ const handleRemoveSharedUsers = (index) => {
               <Typography sx={{ width: '70%', textAlign: 'right' }}>
                 {item.metadata.name}
               </Typography>
+            )}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            {editing && (
+              <>
+              <Typography sx={{ width: '30%', fontWeight: 'bold', textAlign: 'left' }}>Album:</Typography>
+              <div style={{ display: 'flex', alignItems: 'center', width: '70%' }}>
+                <select
+                  value={album}
+                  onChange={(e) => setAlbum(e.target.value)}
+                  style={{ flex: '1' }}
+                >
+                  {albumOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              </>
             )}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
