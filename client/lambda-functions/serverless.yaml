@@ -1,0 +1,444 @@
+service: api-gateway-demo
+frameworkVersion: '3'
+
+plugins:
+  - serverless-step-functions
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: dev
+  region: eu-central-1
+  memorySize: 128
+  timeout: 10
+  environment:
+    BUCKET_NAME:
+      Ref: ContentBucket
+    TABLE_NAME:
+      Ref: ContentTable
+    ALBUM_TABLE_NAME:
+      Ref: AlbumTable
+    SQS_QUEUE_URL:
+      Ref: MySQSQueue
+    SNS_TOPIC_ARN:
+      Ref: MySNSTopic
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "Fn::GetAtt": [ContentTable, Arn]
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "Fn::GetAtt": [AlbumTable, Arn]
+    - Effect: Allow
+      Action:
+        - "states:StartExecution"
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - "s3:GetObject"
+        - "s3:PutObject"
+        - "s3:DeleteObject"
+        - "s3:ListBucket"
+      Resource:
+        - "arn:aws:s3:::my-content-bucket/*"
+        - "arn:aws:s3:::my-content-bucket"
+    - Effect: Allow
+      Action:
+        - "sqs:SendMessage"
+      Resource:
+        - "Fn::GetAtt": [MySQSQueue, Arn]
+    - Effect: Allow
+      Action: "ses:SendEmail"
+      Resource: 
+        - "*"
+    - Effect: Allow
+      Action:
+        - "sns:Publish"
+        - "sns:Subscribe"
+        - "sns:CreateTopic"
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - "cognito-idp:AdminGetUser"
+        - "cognito-idp:AdminDeleteUser"
+        - "cognito-idp:AdminInitiateAuth"
+        - "cognito-idp:AdminRespondToAuthChallenge"
+        - "cognito-idp:CreateUserPoolClient"
+        - "cognito-idp:CreateUserPool"
+        - "cognito-idp:UpdateUserPoolClient"
+      Resource:
+        - "*"
+       
+
+package:
+  # Create separate zip for each Lambda function
+  individually: true
+  patterns:
+    # Exclude everything (each Lambda will specify which directory should be included)
+    # To exclude use '!' prefix
+    - '!**/**'
+    # Include utility directory for every Lambda function
+    - 'utility/**'
+
+functions:
+  deleteAlbum:
+    handler: delete-album/delete_album.delete
+    package:
+      include: 'delete-album/**'
+    events:
+      - http:
+          path: deletealbum/{id}
+          method: delete
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                album: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  subscriteTopic:
+    handler: subscribe-topic/subscribe_topic.subscribe
+    package:
+      include: 'subscribe-topic/**'
+    events:
+      - http:
+          path: subscribe
+          method: get
+          cors: true
+          authorizer:
+              type: COGNITO_USER_POOLS
+              authorizerId:
+                Ref: Authorizer
+  deleteContent:
+    handler: delete-content/delete_content.delete
+    package:
+      include: 'delete-content/**'
+    events:
+      - http:
+          path: deletefile/{id}
+          method: delete
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                album: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  createContent:
+    handler: create-content/create_content.create
+    package:
+      include: 'create-content/**'
+    events:
+      - http:
+          path: uploadfile
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  createContentAsync:
+    handler: create-content-async/create_content_async.create_async
+    package:
+      include: 'create-content-async/**'
+    events:
+      - http:
+          path: uploadfileasync
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  createAlbum:
+    handler: create-album/create_album.create_album
+    package:
+      include: 'create-album/**'
+    events:
+      - http:
+          path: createAlbum
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  getContent:
+    handler: get-content/get_content.get_all
+    package:
+      include: 'get-content/**'
+    events:
+      - http:
+          path: getusercontent
+          method: get
+          request:
+            parameters:
+              querystrings:
+                album: true
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  getSharedContent:
+    handler: get-shared-content/get_shared_content.get_shared
+    package:
+      include: 'get-shared-content/**'
+    events:
+      - http:
+          path: getsharedcontent
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  getAlbums:
+    handler: get-albums/get_albums.get_all
+    package:
+      include: 'get-albums/**'
+    events:
+      - http:
+          path: getuseralbums
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  editContent:
+    handler: edit-content/edit_content.update
+    package:
+      include: 'edit-content/**'
+    events:
+      - http:
+          path: updateusercontent
+          method: put
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  editAlbum:
+    handler: edit-album/edit_album.update
+    package:
+      # Include 'createDogs' directory and all child directories
+      include: 'edit-album/**'
+    events:
+      # REST API endpoint of API Gateway
+      - http:
+          # Path for this endpoint
+          path: updateuseralbum
+          # HTTP method for this endpoint
+          method: put
+          # Enable CORS. Don't forget to return the right header in your response
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: Authorizer
+  sendFamilyRequestEmail:
+    handler: family-referral/family_referral.send_email
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: family-referral/{username}
+          method: get
+          cors: true
+  addingReferal:
+    handler: family-referral/family_referral.adding_referal
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: confirm-referral/{username}/{token}
+          method: get
+          cors: true
+  familyCheck:
+    handler: family-referral/family_referral.check_if_added
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: family-check/{username}
+          method: get
+          cors: true
+  SuccessState:
+    handler: family-referral/family_referral.success_state
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: family-success-state
+          method: get
+          cors: true
+  lambdaTrigger:
+    handler: family-referral/family_referral.lambda_trigger
+    package:
+      include: 'family-referral/**'
+    events:
+      - http:
+          path: lambda-trigger/{username}
+          method: get
+          cors: true
+  failState:
+    handler: family-referral/family_referral.fail_state
+    package:
+      include: 'family-referral/**'
+stepFunctions:
+  stateMachines:
+    delivery:
+      name: 'familyRegistration'
+      definition:
+        Comment: "Family registration start"
+        StartAt: SendFamilyRequestEmail
+        States:
+          SendFamilyRequestEmail:
+            Type: Task
+            Resource: "arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-sendFamilyRequestEmail"
+            InputPath: "$.pathParameters.username"
+            Next: familyCheck
+          familyCheck:
+            Type: Task
+            Resource: "arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-familyCheck"
+            Next: CheckStatus
+          CheckStatus:
+            Type: Choice
+            Choices:
+              - Variable: "$.retryCount"
+                NumericEquals: 10  
+                Next: FailState
+              - Variable: "$.statusCode"
+                NumericEquals: 200
+                Next: SuccessState
+            Default: WaitBeforeRetry
+          FailState:
+            Type: Task
+            Resource: "arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-failState"
+            End: true
+          WaitBeforeRetry:
+            Type: Wait
+            Seconds: 5
+            Next: familyCheck
+          SuccessState:
+            Type: Task
+            Resource: "arn:aws:lambda:eu-central-1:330709951601:function:api-gateway-demo-dev-SuccessState"
+            End: true  
+resources:
+  Resources:
+    ContentTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: content
+        AttributeDefinitions:
+          - AttributeName: contentId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: contentId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    FamilyTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: family
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    AlbumTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: albums
+        AttributeDefinitions:
+          - AttributeName: contentId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: contentId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: users
+        AutoVerifiedAttributes:
+          - "email"
+        EmailConfiguration: 
+          EmailSendingAccount: COGNITO_DEFAULT
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: UserPoolClient
+        GenerateSecret: false
+        UserPoolId:
+          Ref: "CognitoUserPool"
+    Authorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: Authorizer
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Type: COGNITO_USER_POOLS
+        ProviderARNs:
+          - Fn::GetAtt: [CognitoUserPool, Arn]
+        IdentitySource: method.request.header.Authorization
+
+    ContentBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: my-content-bucket
+    MySQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: my-sqs-queue
+
+    MySNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: my-sns-topic

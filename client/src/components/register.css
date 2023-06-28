@@ -1,0 +1,92 @@
+.login-page {
+    display: flex;
+    height: 100%;
+}
+
+.login-page-left {
+    flex: 1;
+    background-color: #f1f1f1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.login-page-right {
+    flex: 1;
+    background-color: #f1f1f1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.register-form-card {
+    height: 620px;
+    width: 500px;
+    padding: 32px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+.login-card-content
+{
+    margin-bottom:100px ;
+}
+.login-image-card {
+    width: 820px;
+    height: 820px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-image {
+    margin-top:10px;
+    width: 800px;
+    height: 800px;
+    object-fit: cover;
+}
+
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+}
+
+.register-button
+{
+    margin-top: 10px;
+    width: 45%;
+}
+
+
+@media (max-width: 1300px) {
+    .login-page-right {
+        display: none;
+    }
+    .login-image-card {
+        display: none;
+    }
+
+    .login-page-left {
+        flex: 1 0 100%;
+    }
+
+    .login-form-card {
+        width: 50%;
+    }
+
+    .login-image-card {
+        width: 80%;
+    }
+
+    .login-image {
+        width: 100%;
+        height: auto;
+    }
+}
