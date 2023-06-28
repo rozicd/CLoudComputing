@@ -10,11 +10,14 @@ table_name = os.environ['TABLE_NAME']
 bucket_name = os.environ['BUCKET_NAME']
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(table_name)  
+table = dynamodb.Table(table_name)
+sns_client = boto3.resource('sns')  
 
 def update(event, context):
     username = event['requestContext']['authorizer']['claims']['cognito:username']
     request_body = json.loads(event['body'])
+    email = event['requestContext']['authorizer']['claims']['email']
+    sanitized_email = email.replace('@', '-').replace('.', '-')
     
     file_name = request_body['file']['filename']
     file_last_modified = str(datetime.timestamp(datetime.now())*1000)
@@ -157,5 +160,12 @@ def update(event, context):
         )
     except ClientError as e:
         return create_response(500, {"message": "An error occurred while deleting the object with the old ID in S3"})
+    
+    sns_topic_arn = 'arn:aws:sns:eu-central-1:330709951601:user-topic-'+sanitized_email
+    print(sns_topic_arn)
+    sns_topic = sns_client.Topic(sns_topic_arn)
+    sns_topic.publish(
+        Message=file_name + " Edited Successfuly!"
+    )
     
     return create_response(200, {"message": "File information updated successfully"})
